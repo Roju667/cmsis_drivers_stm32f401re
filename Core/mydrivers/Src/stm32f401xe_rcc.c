@@ -238,6 +238,7 @@ static uint16_t RCC_GetAhbPrescaler(uint8_t bitvalue)
 	return ahb_prescaler;
 }
 
+
 uint32_t RCC_GetSysclk(void)
 {
 	// calculate sysclk depending on source

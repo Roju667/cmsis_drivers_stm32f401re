@@ -2,7 +2,7 @@ stm32f401xe_rcc.c:22:9:RCC_InitClock	16	static
 stm32f401xe_rcc.c:163:17:RCC_CalculatePllclk	24	static
 stm32f401xe_rcc.c:175:17:RCC_GetApbPrescaler	24	static
 stm32f401xe_rcc.c:202:17:RCC_GetAhbPrescaler	24	static
-stm32f401xe_rcc.c:241:10:RCC_GetSysclk	8	static
-stm32f401xe_rcc.c:272:10:RCC_GetHclk	16	static
-stm32f401xe_rcc.c:279:10:RCC_GetPclk	24	static
-stm32f401xe_rcc.c:297:6:RCC_GetClockFrequencies	16	static
+stm32f401xe_rcc.c:242:10:RCC_GetSysclk	8	static
+stm32f401xe_rcc.c:273:10:RCC_GetHclk	16	static
+stm32f401xe_rcc.c:280:10:RCC_GetPclk	24	static
+stm32f401xe_rcc.c:298:6:RCC_GetClockFrequencies	16	static

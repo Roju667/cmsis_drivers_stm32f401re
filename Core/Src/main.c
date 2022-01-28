@@ -21,6 +21,7 @@
 
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_pwr.h"
+#include "stm32f401xe_rcc.h"
 #include "stm32f4xx.h"
 
 
@@ -28,9 +29,10 @@ void GPIOConfig (void);
 
 int main(void)
 {
+	CLEAR_RESET_FLAGS();
 	GPIOConfig();
-    /* Loop forever */
-	Pwr_EnterSleepMode(kWFI);
+	Pwr_EnterStopMode(kWFI, kStopLPLV);
+
 	while(1)
 	{
 		for(uint32_t i = 0; i < 100000; i++)
@@ -43,17 +45,19 @@ int main(void)
 
 void GPIOConfig (void)
 {
+
 	GPIO_Handle_t GPIOx;
-	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_EXTI_FT;
-	GPIOx.PinConfig.PinNumber = GPIO_PIN_13;
-	GPIOx.pGPIOx = GPIOC;
-
-	GPIO_InitPin(&GPIOx);
-
 	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_OUTPUT;
 	GPIOx.PinConfig.PinNumber = GPIO_PIN_5;
 	GPIOx.PinConfig.OutputType = GPIO_PIN_OT_PP;
 	GPIOx.pGPIOx = GPIOA;
+
+	GPIO_InitPin(&GPIOx);
+
+
+	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_EXTI_FT;
+	GPIOx.PinConfig.PinNumber = GPIO_PIN_13;
+	GPIOx.pGPIOx = GPIOC;
 
 	GPIO_InitPin(&GPIOx);
 
@@ -62,7 +66,10 @@ void GPIOConfig (void)
 
 void EXTI15_10_IRQHandler(void)
 {
-	GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	GPIO_ClearPendingEXTIFlag(GPIO_PIN_13);
+	GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+	SCB->SCR ^= SCB_SCR_SLEEPONEXIT_Msk;
+
 	return;
 }

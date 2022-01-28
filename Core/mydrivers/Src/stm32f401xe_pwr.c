@@ -7,12 +7,17 @@
 
 #include "stm32f401xe_pwr.h"
 
+/*
+ * Configure power voltage detection
+ * @param[pvd_level] - enter voltage level that ha to be checked
+ * @param[mode] - pvdo can be checked by user by polling or can SET IRQ from EXTI line 16
+ */
 void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
 {
 	// enable power regulator bit
 	PWR->CR |= PWR_CR_PVDE;
 
-	// modift power threshhold value
+	// modify power threshold value
 	PWR->CR &= ~(PWR_CR_PLS);
 	PWR->CR |= (pvd_level << PWR_CR_PLS_Pos);
 
@@ -39,7 +44,10 @@ void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
 
 }
 
-// wait for interrupt in sleep mode
+/*
+ * Enter sleep mode
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
+ */
 void Pwr_EnterSleepMode(PwrExit_t exit)
 {
 	// deselect deep sleep mode
@@ -54,8 +62,18 @@ void Pwr_EnterSleepMode(PwrExit_t exit)
 	{
 	__WFE();
 	}
+
+	if(exit == kSleepOnExit)
+	{
+	PWR_SLEEPONEXIT_ENABLE();
+	}
 }
 
+/*
+ * Enter stop mode
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
+ * @param[stop_mode] - stop mode configuration described in RM PWR chapter
+ */
 void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
 {
 	//select deep sleep mode
@@ -100,5 +118,40 @@ void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
 	if(exit == kWFE)
 	{
 	__WFE();
+	}
+
+	if(exit == kSleepOnExit)
+	{
+	PWR_SLEEPONEXIT_ENABLE();
+	}
+}
+
+/*
+ * Enter standby mode
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
+ * RTC has to be configured (alarm/tamper/timestamp) - come back here after RTC deepdive
+ */
+void Pwr_EnterStandbyMode(PwrExit_t exit)
+{
+	//select deep sleep mode
+	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+	//select between stop and standby mode
+	PWR->CR |= PWR_CR_PDDS;
+	// bit is cleared in Power Control/Status register
+	PWR->CSR &= ~(PWR_CSR_WUF);
+
+	if(exit == kWFI)
+	{
+	__WFI();
+	}
+
+	if(exit == kWFE)
+	{
+	__WFE();
+	}
+
+	if(exit == kSleepOnExit)
+	{
+	PWR_SLEEPONEXIT_ENABLE();
 	}
 }

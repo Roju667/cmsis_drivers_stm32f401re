@@ -29,16 +29,12 @@ typedef enum PvdMode_t
 	kPvdModeIrqFT
 } PvdMode_t;
 
-typedef enum PwrEntry_t
-{
-	kSleepNow,
-	kSleepOnEXTI
-} PwrEntry_t;
 
 typedef enum PwrExit_t
 {
 	kWFI,
-	kWFE
+	kWFE,
+	kSleepOnExit
 } PwrExit_t;
 
 // there are multiple choices for what has to be disabled during stop mode
@@ -57,6 +53,11 @@ typedef enum StopModes_t
 	kStopMRLV,
 	kStopLPLV
 } StopModes_t;
+
+//
+#define PWR_SLEEPONEXIT_ENABLE()		SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk
+#define PWR_SLEEPONEXIT_DISABLE()		SCB->SCR &= ~(SCB_SCR_SLEEPONEXIT_Msk)
+
 
 void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode);
 void Pwr_EnterSleepMode(PwrExit_t exit);

@@ -241,6 +241,11 @@ typedef struct RCC_ClockFreqs
 
 #define RCC_CLOCK_PWR_DISABLE()		RCC->APB1ENR &= ~(RCC_APB1ENR_PWREN)
 
+/*
+ * Clear reset flags
+ */
+#define CLEAR_RESET_FLAGS()			RCC->CSR |= RCC_CSR_RMVF
+
 
 uint8_t RCC_InitClock(RCC_ClockInitTypeDef *pClockInit);
 uint32_t RCC_GetHclk(void);
