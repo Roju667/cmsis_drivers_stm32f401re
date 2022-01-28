@@ -1,0 +1,4 @@
+core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
+stm32f401xe_pwr.c:10:6:Pwr_EnablePvd	16	static
+stm32f401xe_pwr.c:43:6:Pwr_EnterSleepMode	16	static,ignoring_inline_asm
+stm32f401xe_pwr.c:59:6:Pwr_EnterStopMode	16	static,ignoring_inline_asm

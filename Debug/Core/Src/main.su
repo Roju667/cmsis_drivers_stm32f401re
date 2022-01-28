@@ -1,0 +1,3 @@
+main.c:29:5:main	16	static
+main.c:44:6:GPIOConfig	24	static
+main.c:63:6:EXTI15_10_IRQHandler	8	static

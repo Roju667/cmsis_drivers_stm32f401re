@@ -1,0 +1,5 @@
+stm32f401xe_gpio.c:17:13:GPIO_ClockEnable	16	static,ignoring_inline_asm
+stm32f401xe_gpio.c:55:6:GPIO_InitPin	32	static
+stm32f401xe_gpio.c:148:6:GPIO_WritePin	16	static
+stm32f401xe_gpio.c:161:6:GPIO_TogglePin	16	static
+stm32f401xe_gpio.c:172:6:GPIO_ClearPendingEXTIFlag	16	static
