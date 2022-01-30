@@ -1,0 +1,3 @@
+stm32f401xe_usart.c:14:6:Usart_InitGpioPins	40	static
+stm32f401xe_usart.c:57:13:Usart_SetBaudDivider	48	static
+stm32f401xe_usart.c:97:6:Usart_Transmit	32	static

@@ -22,6 +22,7 @@
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_pwr.h"
 #include "stm32f401xe_rcc.h"
+#include "stm32f401xe_usart.h"
 #include "stm32f4xx.h"
 
 
@@ -29,17 +30,32 @@ void GPIOConfig (void);
 
 int main(void)
 {
-	CLEAR_RESET_FLAGS();
 	GPIOConfig();
-	Pwr_EnterStopMode(kWFI, kStopLPLV);
+
+	RCC_CLOCK_USART2_ENABLE();
+	USART_Handle_t p_usart2;
+	uint8_t databuffer[10] = "wiadom\n\r";
+	p_usart2.p_usartx = USART2;
+	p_usart2.usart_config.baud_rate = 115200;
+	p_usart2.usart_config.oversampling = USART_OVERSAMPLING_16;
+	p_usart2.usart_config.word_lenght = USART_WORD_LENGHT_8BITS;
+	p_usart2.usart_config.stop_bits = USART_STOPBITS_1;
+	Usart_InitGpioPins(&p_usart2);
+	Usart_Transmit(&p_usart2, databuffer, 10);
+
+
 
 	while(1)
 	{
-		for(uint32_t i = 0; i < 100000; i++)
+		for (uint32_t j = 0; j < 10; j++)
 		{
+			for (uint32_t i = 0; i < 100000; i++)
+			{
 
+			}
+			GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		}
-		GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		Pwr_EnterStandbyMode(kWFI);
 	}
 }
 
@@ -68,8 +84,6 @@ void EXTI15_10_IRQHandler(void)
 {
 	GPIO_ClearPendingEXTIFlag(GPIO_PIN_13);
 	GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-	SCB->SCR ^= SCB_SCR_SLEEPONEXIT_Msk;
 
 	return;
 }

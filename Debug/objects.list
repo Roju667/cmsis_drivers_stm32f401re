@@ -8,3 +8,4 @@
 "./Core/mydrivers/Src/stm32f401xe_pwr.o"
 "./Core/mydrivers/Src/stm32f401xe_rcc.o"
 "./Core/mydrivers/Src/stm32f401xe_tim.o"
+"./Core/mydrivers/Src/stm32f401xe_usart.o"

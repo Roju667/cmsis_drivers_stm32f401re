@@ -37,6 +37,7 @@ typedef enum PwrExit_t
 	kSleepOnExit
 } PwrExit_t;
 
+
 // there are multiple choices for what has to be disabled during stop mode
 // bits that are set/reset
 // MRLV - main regulator low voltage
@@ -54,12 +55,11 @@ typedef enum StopModes_t
 	kStopLPLV
 } StopModes_t;
 
-//
-#define PWR_SLEEPONEXIT_ENABLE()		SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk
-#define PWR_SLEEPONEXIT_DISABLE()		SCB->SCR &= ~(SCB_SCR_SLEEPONEXIT_Msk)
 
 
 void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode);
 void Pwr_EnterSleepMode(PwrExit_t exit);
 void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode);
+void Pwr_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len);
+void Pwr_EnterStandbyMode(PwrExit_t exit);
 #endif /* MYDRIVERS_INC_STM32F401XE_PWR_H_ */

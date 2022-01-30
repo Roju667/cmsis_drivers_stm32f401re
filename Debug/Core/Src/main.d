@@ -9,6 +9,7 @@ Core/Src/main.o: ../Core/Src/main.c \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h \
  ../Core/mydrivers/Inc/stm32f401xe_pwr.h \
  ../Core/mydrivers/Inc/stm32f401xe_rcc.h \
+ ../Core/mydrivers/Inc/stm32f401xe_usart.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h
 
@@ -31,6 +32,8 @@ Core/Src/main.o: ../Core/Src/main.c \
 ../Core/mydrivers/Inc/stm32f401xe_pwr.h:
 
 ../Core/mydrivers/Inc/stm32f401xe_rcc.h:
+
+../Core/mydrivers/Inc/stm32f401xe_usart.h:
 
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
 
