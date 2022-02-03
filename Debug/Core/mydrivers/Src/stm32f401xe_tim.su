@@ -1,5 +1,5 @@
 stm32f401xe_tim.c:11:6:TIM_ClockEnable	16	static,ignoring_inline_asm
-stm32f401xe_tim.c:51:6:TIM_InitTimer	16	static
-stm32f401xe_tim.c:67:6:TIM_EnableIRQ	16	static
-stm32f401xe_tim.c:72:6:TIM_ClearUpdateFlag	16	static
-stm32f401xe_tim.c:77:6:TIM_StartTimer	16	static
+stm32f401xe_tim.c:53:6:TIM_InitTimer	16	static
+stm32f401xe_tim.c:69:6:TIM_EnableIRQ	16	static
+stm32f401xe_tim.c:74:6:TIM_ClearUpdateFlag	16	static
+stm32f401xe_tim.c:79:6:TIM_StartTimer	16	static

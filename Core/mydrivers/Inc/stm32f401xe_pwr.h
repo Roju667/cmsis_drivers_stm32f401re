@@ -11,32 +11,19 @@
 
 typedef enum PvdThresholdLevel_t
 {
-	kPvdLevel22V,
-	kPvdLevel23V,
-	kPvdLevel24V,
-	kPvdLevel25V,
-	kPvdLevel26V,
-	kPvdLevel27V,
-	kPvdLevel28V,
-	kPvdLevel29V
+	kPvdLevel22V, kPvdLevel23V, kPvdLevel24V, kPvdLevel25V, kPvdLevel26V, kPvdLevel27V, kPvdLevel28V, kPvdLevel29V
 
 } PvdThresholdLevel_t;
 
 typedef enum PvdMode_t
 {
-	kPvdModeNormal,
-	kPvdModeIrqRT,
-	kPvdModeIrqFT
+	kPvdModeNormal, kPvdModeIrqRT, kPvdModeIrqFT
 } PvdMode_t;
-
 
 typedef enum PwrExit_t
 {
-	kWFI,
-	kWFE,
-	kSleepOnExit
+	kWFI, kWFE, kSleepOnExit
 } PwrExit_t;
-
 
 // there are multiple choices for what has to be disabled during stop mode
 // bits that are set/reset
@@ -47,15 +34,8 @@ typedef enum PwrExit_t
 
 typedef enum StopModes_t
 {
-	kStopMR,
-	kStopMRFPD,
-	kStopLP,
-	kStopLPFPD,
-	kStopMRLV,
-	kStopLPLV
+	kStopMR, kStopMRFPD, kStopLP, kStopLPFPD, kStopMRLV, kStopLPLV
 } StopModes_t;
-
-
 
 void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode);
 void Pwr_EnterSleepMode(PwrExit_t exit);

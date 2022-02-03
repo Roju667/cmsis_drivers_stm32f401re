@@ -6,6 +6,7 @@
  */
 
 #include "stm32f401xe_gpio.h"
+
 #include "stm32f401xe_rcc.h"
 
 /*
@@ -41,40 +42,41 @@ static void GPIO_ClockEnable(GPIO_TypeDef *GPIO)
 		RCC_CLOCK_GPIOH_ENABLE();
 	}
 
-	//this operation is unnecessary here because configuration library is taking more than 2 clock cycles
-	//between clock enable and configuring register, i leave it here to remind myself that stmf401x has
-	//a limitation that is described in errata point 2.1.6
+	// this operation is unnecessary here because configuration library is taking
+	// more than 2 clock cycles between clock enable and configuring register, i
+	// leave it here to remind myself that stmf401x has a limitation that is
+	// described in errata point 2.1.6
 	__DSB();
 }
 /*
  * Initialize GPIO pin
  *
- * @param[*hGPIO] - handler to GPIO structure that contains peripheral base address and pin configuration
+ * @param[*hGPIO] - handler to GPIO structure that contains peripheral base
+ * address and pin configuration
  * @return - void
  */
 void GPIO_InitPin(GPIO_Handle_t *hGPIO)
 {
-
-	//enable clock
+	// enable clock
 	GPIO_ClockEnable(hGPIO->pGPIOx);
 
 	// mode selection
 	if (hGPIO->PinConfig.Mode < GPIO_PIN_MODE_EXTI_FT)
 	{
 		// non IRQ mode
-	hGPIO->pGPIOx->MODER &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-	hGPIO->pGPIOx->MODER |= hGPIO->PinConfig.Mode << (hGPIO->PinConfig.PinNumber * 2);
+		hGPIO->pGPIOx->MODER &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
+		hGPIO->pGPIOx->MODER |= hGPIO->PinConfig.Mode << (hGPIO->PinConfig.PinNumber * 2);
 	}
 	else
 	{
-		//IRQ mode
+		// IRQ mode
 
-		//set as input
+		// set as input
 		hGPIO->pGPIOx->MODER &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-		//interrupt mask
+		// interrupt mask
 		EXTI->IMR |= (0b1 << hGPIO->PinConfig.PinNumber);
 
-		//rising/falling trigger
+		// rising/falling trigger
 		if ((hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_FT) || (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_FTRT))
 		{
 			EXTI->FTSR |= (0b1 << hGPIO->PinConfig.PinNumber);
@@ -85,7 +87,7 @@ void GPIO_InitPin(GPIO_Handle_t *hGPIO)
 			EXTI->RTSR |= (0b1 << hGPIO->PinConfig.PinNumber);
 		}
 
-		//enable NVIC interrupt
+		// enable NVIC interrupt
 		if (hGPIO->PinConfig.PinNumber < GPIO_PIN_5)
 		{
 			// positions for EXTI interrupts in NVIC vector table are 6-10
@@ -114,11 +116,11 @@ void GPIO_InitPin(GPIO_Handle_t *hGPIO)
 	// set speed and output type for mode output or AF
 	if ((hGPIO->PinConfig.Mode == GPIO_PIN_MODE_OUTPUT) || (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_AF))
 	{
-		//speed selection
+		// speed selection
 		hGPIO->pGPIOx->OSPEEDR &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
 		hGPIO->pGPIOx->OSPEEDR |= hGPIO->PinConfig.OutputSpeed << (hGPIO->PinConfig.PinNumber * 2);
 
-		//output type selection
+		// output type selection
 		hGPIO->pGPIOx->OTYPER &= ~(0b1 << (hGPIO->PinConfig.PinNumber));
 		hGPIO->pGPIOx->OTYPER |= hGPIO->PinConfig.OutputType << (hGPIO->PinConfig.PinNumber);
 	}
@@ -134,7 +136,6 @@ void GPIO_InitPin(GPIO_Handle_t *hGPIO)
 	// pull ups pull downs
 	hGPIO->pGPIOx->PUPDR &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
 	hGPIO->pGPIOx->PUPDR |= (hGPIO->PinConfig.PullUpPullDown << (hGPIO->PinConfig.PinNumber * 2));
-
 }
 
 /*

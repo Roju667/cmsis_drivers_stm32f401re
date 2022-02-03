@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/mydrivers/Src/stm32f401xe_dma.c \
 ../Core/mydrivers/Src/stm32f401xe_gpio.c \
 ../Core/mydrivers/Src/stm32f401xe_i2c.c \
 ../Core/mydrivers/Src/stm32f401xe_pwr.c \
@@ -13,6 +14,7 @@ C_SRCS += \
 ../Core/mydrivers/Src/stm32f401xe_usart.c 
 
 OBJS += \
+./Core/mydrivers/Src/stm32f401xe_dma.o \
 ./Core/mydrivers/Src/stm32f401xe_gpio.o \
 ./Core/mydrivers/Src/stm32f401xe_i2c.o \
 ./Core/mydrivers/Src/stm32f401xe_pwr.o \
@@ -21,6 +23,7 @@ OBJS += \
 ./Core/mydrivers/Src/stm32f401xe_usart.o 
 
 C_DEPS += \
+./Core/mydrivers/Src/stm32f401xe_dma.d \
 ./Core/mydrivers/Src/stm32f401xe_gpio.d \
 ./Core/mydrivers/Src/stm32f401xe_i2c.d \
 ./Core/mydrivers/Src/stm32f401xe_pwr.d \

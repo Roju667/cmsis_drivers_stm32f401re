@@ -6,12 +6,14 @@
  */
 
 #include "stm32f401xe_pwr.h"
+
 #include "stm32f401xe_rcc.h"
 
 /*
  * Configure power voltage detection
  * @param[pvd_level] - enter voltage level that ha to be checked
- * @param[mode] - pvdo can be checked by user by polling or can SET IRQ from EXTI line 16
+ * @param[mode] - pvdo can be checked by user by polling or can SET IRQ from
+ * EXTI line 16
  */
 void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
 {
@@ -42,12 +44,12 @@ void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
 			EXTI->RTSR |= EXTI_RTSR_TR16;
 		}
 	}
-
 }
 
 /*
  * Enter sleep mode
- * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR
+ * [kSleepOnExit]
  */
 void Pwr_EnterSleepMode(PwrExit_t exit)
 {
@@ -73,17 +75,18 @@ void Pwr_EnterSleepMode(PwrExit_t exit)
 
 /*
  * Enter stop mode
- * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR
+ * [kSleepOnExit]
  * @param[stop_mode] - stop mode configuration described in RM PWR chapter
  */
 void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
 {
-	//select deep sleep mode
+	// select deep sleep mode
 	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-	//select between stop and standby mode
+	// select between stop and standby mode
 	PWR->CR &= ~(PWR_CR_PDDS);
 
-	//set parameters for stop mode
+	// set parameters for stop mode
 	PWR->CR &= ~(PWR_CR_MRLVDS);
 	PWR->CR &= ~(PWR_CR_LPLVDS);
 	PWR->CR &= ~(PWR_CR_FPDS);
@@ -130,20 +133,20 @@ void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
 
 /*
  * Enter standby mode
- * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR [kSleepOnExit]
- * RTC has to be configured (alarm/tamper/timestamp) - come back here after RTC deepdive
+ * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR
+ * [kSleepOnExit] RTC has to be configured (alarm/tamper/timestamp) - come back
+ * here after RTC deepdive
  */
 void Pwr_EnterStandbyMode(PwrExit_t exit)
 {
 	// enable wake up pin
 	PWR->CSR |= PWR_CSR_EWUP;
-	//select deep sleep mode
+	// select deep sleep mode
 	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-	//select between stop and standby mode
+	// select between stop and standby mode
 	PWR->CR |= PWR_CR_PDDS;
 	// bit is cleared in Power Control/Status register
 	PWR->CR |= PWR_CR_CWUF;
-
 
 	if (exit == kWFI)
 	{
@@ -162,7 +165,8 @@ void Pwr_EnterStandbyMode(PwrExit_t exit)
 }
 
 /*
- * Backup registers are retained even when main power is off and mcu is only on battery supply
+ * Backup registers are retained even when main power is off and mcu is only on
+ * battery supply
  * @param[p_data_buffer] - data that we want to save in backup registers
  * @param[data_len] - maximum 20x uint32
  */
@@ -179,13 +183,13 @@ void Pwr_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len)
 
 	// RTC clock selection
 	RCC->BDCR &= ~(RCC_BDCR_RTCSEL);
-	RCC->BDCR |= RCC_BDCR_RTCSEL_1; //LSI
+	RCC->BDCR |= RCC_BDCR_RTCSEL_1;  // LSI
 
 	// if using HSE as clock source prescaler has to be configure to ensure 1Mhz
-	//RCC->CFGR &= ~(RCC_CFGR_RTCPRE);
-	//RCC->CFGR |= RCC_CFGR_RTCPRE_1;
+	// RCC->CFGR &= ~(RCC_CFGR_RTCPRE);
+	// RCC->CFGR |= RCC_CFGR_RTCPRE_1;
 
-	//enable RTC
+	// enable RTC
 	RCC->BDCR |= RCC_BDCR_RTCEN;
 
 	uint32_t *p_temp_data;

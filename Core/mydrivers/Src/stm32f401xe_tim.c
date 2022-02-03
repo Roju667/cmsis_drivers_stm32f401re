@@ -5,8 +5,8 @@
  *      Author: ROJEK
  */
 #include <stm32f401xe_tim.h>
-#include "stm32f401xe_rcc.h"
 
+#include "stm32f401xe_rcc.h"
 
 void TIM_ClockEnable(TIM_TypeDef *p_timx)
 {
@@ -33,19 +33,21 @@ void TIM_ClockEnable(TIM_TypeDef *p_timx)
 	else if (p_timx == TIM9)
 	{
 		RCC_CLOCK_TIM9_ENABLE();
-	}else if (p_timx == TIM10)
+	}
+	else if (p_timx == TIM10)
 	{
 		RCC_CLOCK_TIM10_ENABLE();
-	}else if (p_timx == TIM11)
+	}
+	else if (p_timx == TIM11)
 	{
 		RCC_CLOCK_TIM11_ENABLE();
 	}
 
-	//this operation is unnecessary here because configuration library is taking more than 2 clock cycles
-	//between clock enable and configuring register, i leave it here to remind myself that stmf401x has
-	//a limitation that is described in errata point 2.1.6
+	// this operation is unnecessary here because configuration library is taking
+	// more than 2 clock cycles between clock enable and configuring register, i
+	// leave it here to remind myself that stmf401x has a limitation that is
+	// described in errata point 2.1.6
 	__DSB();
-
 }
 
 void TIM_InitTimer(TimerHandle_t *p_handle_timer)

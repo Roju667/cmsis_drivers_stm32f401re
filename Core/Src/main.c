@@ -19,14 +19,18 @@
 
 #include <stdint.h>
 
+#include "stm32f401xe_dma.h"
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_pwr.h"
 #include "stm32f401xe_rcc.h"
 #include "stm32f401xe_usart.h"
 #include "stm32f4xx.h"
 
+volatile uint16_t count_letters = 0;
 
-void GPIOConfig (void);
+void GPIOConfig(void);
+void USART2Config(USART_Handle_t *p_usart2);
+void DMA1Config(DMA_Handle_t *p_dma1);
 
 int main(void)
 {
@@ -34,34 +38,32 @@ int main(void)
 
 	RCC_CLOCK_USART2_ENABLE();
 	USART_Handle_t p_usart2;
-	uint8_t databuffer[10] = "wiadom\n\r";
-	p_usart2.p_usartx = USART2;
-	p_usart2.usart_config.baud_rate = 115200;
-	p_usart2.usart_config.oversampling = USART_OVERSAMPLING_16;
-	p_usart2.usart_config.word_lenght = USART_WORD_LENGHT_8BITS;
-	p_usart2.usart_config.stop_bits = USART_STOPBITS_1;
-	Usart_InitGpioPins(&p_usart2);
-	Usart_Transmit(&p_usart2, databuffer, 10);
+	DMA_Handle_t p_dma1;
 
+	volatile uint8_t databuffer[16] = "DMA transfer \n\r";
 
+	USART2Config(&p_usart2);
+	DMA1Config(&p_dma1);
 
-	while(1)
+	NVIC_EnableIRQ(USART2_IRQn);
+	NVIC_EnableIRQ(DMA1_Stream4_IRQn);
+	Usart_TransmitDMA(&p_usart2, databuffer, 16);
+
+	while (1)
 	{
 		for (uint32_t j = 0; j < 10; j++)
 		{
 			for (uint32_t i = 0; i < 100000; i++)
 			{
-
 			}
 			GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		}
-		Pwr_EnterStandbyMode(kWFI);
+		//Pwr_EnterStandbyMode(kWFI);
 	}
 }
 
-void GPIOConfig (void)
+void GPIOConfig(void)
 {
-
 	GPIO_Handle_t GPIOx;
 	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_OUTPUT;
 	GPIOx.PinConfig.PinNumber = GPIO_PIN_5;
@@ -69,7 +71,6 @@ void GPIOConfig (void)
 	GPIOx.pGPIOx = GPIOA;
 
 	GPIO_InitPin(&GPIOx);
-
 
 	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_EXTI_FT;
 	GPIOx.PinConfig.PinNumber = GPIO_PIN_13;
@@ -80,10 +81,42 @@ void GPIOConfig (void)
 	return;
 }
 
+void USART2Config(USART_Handle_t *p_usart2)
+{
+	p_usart2->p_usartx = USART2;
+	p_usart2->usart_config.baud_rate = 115200;
+	p_usart2->usart_config.oversampling = USART_OVERSAMPLING_16;
+	p_usart2->usart_config.word_lenght = USART_WORD_LENGHT_8BITS;
+	p_usart2->usart_config.stop_bits = USART_STOPBITS_1;
+	p_usart2->usart_dma.dma_channel_tx = kChannel5;
+	p_usart2->usart_dma.p_dma_stream_tx = DMA1_Stream6;
+	Usart_Init(p_usart2);
+}
+
+void DMA1Config(DMA_Handle_t *p_dma1)
+{
+	p_dma1->p_dmax = DMA1;
+	p_dma1->p_dma_streamx = DMA1_Stream6;
+	p_dma1->stream_config.channel_number = kChannel4;
+	p_dma1->stream_config.circular_mode = kCircularDisable;
+	p_dma1->stream_config.direction = kMemToPeri;
+	p_dma1->stream_config.mem_data_size = kByte;
+	p_dma1->stream_config.mem_increment = kIncrementEnable;
+	p_dma1->stream_config.p_peri_address = &(USART2->DR);
+	p_dma1->stream_config.peri_data_size = kByte;
+	p_dma1->stream_config.peri_increment = kIncrementDisable;
+
+	Dma_StreamInit(p_dma1);
+}
+
 void EXTI15_10_IRQHandler(void)
 {
 	GPIO_ClearPendingEXTIFlag(GPIO_PIN_13);
 	GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
 	return;
+}
+
+void USART2_IRQHandler(void)
+{
 }

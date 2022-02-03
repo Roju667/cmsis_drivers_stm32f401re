@@ -1,0 +1,4 @@
+stm32f401xe_dma.c:14:6:Dma_ClockEnable	16	static
+stm32f401xe_dma.c:28:16:Dma_GetStreamNumber	16	static
+stm32f401xe_dma.c:64:13:Dma_ClearAllStreamFlags	16	static
+stm32f401xe_dma.c:87:6:Dma_StreamInit	24	static

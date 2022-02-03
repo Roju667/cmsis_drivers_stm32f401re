@@ -5,8 +5,9 @@
  *      Author: pawel
  */
 
-#include "stm32f401xe_gpio.h"
 #include "stm32f401xe_i2c.h"
+
+#include "stm32f401xe_gpio.h"
 #include "stm32f401xe_rcc.h"
 
 /*
@@ -63,12 +64,10 @@ static void I2c_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 			// PB9 SDA
 			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
 		}
-
 	}
 
 	if (p_i2cx == I2C2)
 	{
-
 		// PB10 SCL
 		gpio_scl.pGPIOx = GPIOB;
 		gpio_scl.PinConfig.PinNumber = GPIO_PIN_10;
@@ -87,12 +86,10 @@ static void I2c_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 			gpio_sda.PinConfig.PinNumber = GPIO_PIN_3;
 			gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF9;
 		}
-
 	}
 
 	if (p_i2cx == I2C3)
 	{
-
 		// PA8 SCL
 		gpio_scl.pGPIOx = GPIOA;
 		gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
@@ -115,7 +112,6 @@ static void I2c_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 			// Alternate Function
 			gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF9;
 		}
-
 	}
 
 	// Mode AF
@@ -136,7 +132,6 @@ static void I2c_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 
 	GPIO_InitPin(&gpio_sda);
 	GPIO_InitPin(&gpio_scl);
-
 }
 
 /*
@@ -153,7 +148,7 @@ uint8_t I2c_Init(I2c_Handle_t *p_handle_i2c)
 	// init GPIO pins
 	I2c_InitGpioPins(p_handle_i2c->p_i2cx, 1);
 
-	//reset I2C
+	// reset I2C
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_SWRST;
 	p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_SWRST);
 
@@ -173,8 +168,8 @@ uint8_t I2c_Init(I2c_Handle_t *p_handle_i2c)
 	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_FS);
 	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_DUTY);
 
-	// CCR calculation for slow mode -> values are coming from RM CCR register and result is in [ns]
-	// (Thigh + Tlow) / (CEOFF * PCLK)
+	// CCR calculation for slow mode -> values are coming from RM CCR register and
+	// result is in [ns] (Thigh + Tlow) / (CEOFF * PCLK)
 	temp_ccr = (I2C_CCR_SM_THIGH + I2C_CCR_SM_TLOW) / (I2C_CCR_SM_COEFF * (1000 / p_handle_i2c->i2c_config.abp1_freq_mhz));
 
 	// TRISE calculation for slow mode -> equation is from RM
@@ -215,31 +210,29 @@ uint8_t I2c_Init(I2c_Handle_t *p_handle_i2c)
  *
  * @param[*p_handle_i2c] - pointer to handler to i2c structure
  * @param[slave_address] - address to slave in 7 bit addressing mode
- * @param[mode] - send information if master is in reciever or transmitter mode @Mode
+ * @param[mode] - send information if master is in reciever or transmitter mode
+ * @Mode
  * @return - void
  */
 static void I2c_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t mode, uint32_t timeout)
 {
 	uint8_t temp_byte;
 	uint32_t temp_timeout = 0;
-	//1.0 Set START BIT
+	// 1.0 Set START BIT
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_START;
 
-	//1.1 Wait until SB flag is set
+	// 1.1 Wait until SB flag is set
 	while (!(I2C_SR1_SB & p_handle_i2c->p_i2cx->SR1))
 		if (temp_timeout > timeout)
-			break;
-		;
-	//1.2 Clear SB by reading SR1
+			break;;
+	// 1.2 Clear SB by reading SR1
 	temp_byte = p_handle_i2c->p_i2cx->SR1;
 	// If transmitting set slave addres LSB to 0, reciever 1
 	slave_address &= (~1U);
 	slave_address |= mode;
-	//2. Put slave address in DR register -
+	// 2. Put slave address in DR register -
 	p_handle_i2c->p_i2cx->DR = slave_address;
-
-
 }
 
 /*
@@ -254,7 +247,6 @@ static void I2c_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, u
  */
 uint8_t I2c_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
 {
-
 	uint32_t tx_data_to_send = data_size;
 	uint32_t tx_data_index = 0;
 	uint8_t temp_byte;
@@ -264,17 +256,17 @@ uint8_t I2c_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t 
 	// wait until ADDR is set
 	while (!(I2C_SR1_ADDR & p_handle_i2c->p_i2cx->SR1))
 		;
-	//4. ADDR is cleared by reading SR1 , Read SR2
+	// 4. ADDR is cleared by reading SR1 , Read SR2
 	temp_byte = p_handle_i2c->p_i2cx->SR1;
 	temp_byte = p_handle_i2c->p_i2cx->SR2;
 
-//5. TxE bit is set when acknowledge bit is sent
+	// 5. TxE bit is set when acknowledge bit is sent
 	while (!(p_handle_i2c->p_i2cx->SR1 & I2C_SR1_TXE))
 		;
-//6. Write memory address to DR to clear TxE
+	// 6. Write memory address to DR to clear TxE
 	p_handle_i2c->p_i2cx->DR = mem_address;
 
-//7. Data transfer
+	// 7. Data transfer
 	while (tx_data_to_send > 0)
 	{
 		// wait until data register is empty
@@ -284,11 +276,12 @@ uint8_t I2c_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t 
 		// put data in data register
 		p_handle_i2c->p_i2cx->DR = p_tx_data_buffer[tx_data_index];
 
-		//change counters
+		// change counters
 		tx_data_to_send--;
 		tx_data_index++;
 
-//8. After last bit is written to DR register , Set STOP bit  and interface is going back to slave mode
+		// 8. After last bit is written to DR register , Set STOP bit  and interface
+		// is going back to slave mode
 		if (tx_data_to_send == 0)
 		{
 			// check if data transfer is finsihed
@@ -296,9 +289,7 @@ uint8_t I2c_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t 
 				;
 			// stop transfer
 			p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
-
 		}
-
 	}
 
 	return 0;
@@ -306,7 +297,6 @@ uint8_t I2c_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t 
 
 uint8_t I2c_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *p_rx_data_buffer, uint32_t data_size)
 {
-
 	uint32_t rx_data_to_get = data_size;
 	uint8_t temp_byte;
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
@@ -320,7 +310,7 @@ uint8_t I2c_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *
 	{
 		// Disable acknowledge
 		p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_ACK);
-		//4. ADDR is cleared by reading SR1 , Read SR2
+		// 4. ADDR is cleared by reading SR1 , Read SR2
 		temp_byte = p_handle_i2c->p_i2cx->SR1;
 		temp_byte = p_handle_i2c->p_i2cx->SR2;
 
@@ -339,8 +329,7 @@ uint8_t I2c_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *
 	// multiple bytes recieve
 	while (rx_data_to_get > 2)
 	{
-
-		//4. ADDR is cleared by reading SR1 , Read SR2
+		// 4. ADDR is cleared by reading SR1 , Read SR2
 		temp_byte = p_handle_i2c->p_i2cx->SR1;
 		temp_byte = p_handle_i2c->p_i2cx->SR2;
 
@@ -371,7 +360,6 @@ uint8_t I2c_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *
 			;
 		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
 		rx_data_to_get--;
-
 	}
 	return 0;
 }

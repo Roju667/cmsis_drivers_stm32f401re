@@ -21,10 +21,9 @@
  */
 uint8_t RCC_InitClock(RCC_ClockInitTypeDef *p_clock_init)
 {
-
 	/* 1. Enable HSI/HSE as main source RCC->CR */
 
-	//enable HSI/HSE
+	// enable HSI/HSE
 	if (p_clock_init->oscillator_type == RCC_OSCILLATORTYPE_HSI)
 	{
 		// set HSI flag
@@ -49,8 +48,8 @@ uint8_t RCC_InitClock(RCC_ClockInitTypeDef *p_clock_init)
 	/* 3. Configure Flash and Latency settings */
 	// enable data, instruction and prefetch cache
 	FLASH->ACR |= (FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_PRFTEN);
-	// to read correct from flash at certain voltage and frequency latency between read has to be set correctly
-	// this table can be found in reference manual
+	// to read correct from flash at certain voltage and frequency latency between
+	// read has to be set correctly this table can be found in reference manual
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
 	FLASH->ACR |= (p_clock_init->flash_latency << FLASH_ACR_LATENCY_Pos);
 
@@ -77,8 +76,9 @@ uint8_t RCC_InitClock(RCC_ClockInitTypeDef *p_clock_init)
 		RCC->PLLCFGR |= (p_clock_init->pll.source << RCC_PLLCFGR_PLLSRC_Pos);
 
 		// PLLM - division factor for the main PLL
-		// It is recommended to put source frequency in range of 1 - 2Mhz (2Mhz recommended)
-		// Frequency after this division operation is input of VCO (voltage controlled oscillator)
+		// It is recommended to put source frequency in range of 1 - 2Mhz (2Mhz
+		// recommended) Frequency after this division operation is input of VCO
+		// (voltage controlled oscillator)
 
 		if (p_clock_init->pll.pllm < 3 || p_clock_init->pll.pllm > 63)
 		{
@@ -110,10 +110,10 @@ uint8_t RCC_InitClock(RCC_ClockInitTypeDef *p_clock_init)
 		RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLP);
 		RCC->PLLCFGR |= (p_clock_init->pll.pllp << RCC_PLLCFGR_PLLP_Pos);
 
-		// PLLQ - ) division factor for USB OTG FS, SDIO and random number generator clocks
-		// The USB OTG FS requires a 48 MHz clock to work correctly. The SDIO and the
-		// random number generator need a frequency lower than or equal to 48 MHz to work
-		// correctly
+		// PLLQ - ) division factor for USB OTG FS, SDIO and random number generator
+		// clocks The USB OTG FS requires a 48 MHz clock to work correctly. The SDIO
+		// and the random number generator need a frequency lower than or equal to
+		// 48 MHz to work correctly
 
 		if (p_clock_init->pll.pllq < 2 || p_clock_init->pll.pllq > 15)
 		{
@@ -151,20 +151,21 @@ uint8_t RCC_InitClock(RCC_ClockInitTypeDef *p_clock_init)
 		RCC->CFGR |= (p_clock_init->oscillator_type << RCC_CFGR_SW_Pos);
 
 		// wait until HSI/HSE is set as a clock source
-		while ((RCC->CFGR & (p_clock_init->oscillator_type << RCC_CFGR_SW_Pos)) != RCC_CFGR_SWS_PLL)
+		while ((RCC->CFGR & (p_clock_init->oscillator_type << RCC_CFGR_SW_Pos)) !=
+		RCC_CFGR_SWS_PLL)
 			;
-
 	}
 
 	return 0;
 }
 
-
-static uint32_t RCC_CalculatePllclk (uint32_t source)
+static uint32_t RCC_CalculatePllclk(uint32_t source)
 {
-	uint16_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM) >> RCC_PLLCFGR_PLLM_Pos;;
+	uint16_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM) >> RCC_PLLCFGR_PLLM_Pos;
+	;
 	uint16_t plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> RCC_PLLCFGR_PLLN_Pos;
-	uint16_t pllp = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> RCC_PLLCFGR_PLLP_Pos;;
+	uint16_t pllp = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> RCC_PLLCFGR_PLLP_Pos;
+	;
 
 	// pllp register has 2 bits - 00 = 2; 01 = 4; 10 = 6; 11 = 8
 	pllp = (pllp * 2) + 2;
@@ -177,23 +178,23 @@ static uint16_t RCC_GetApbPrescaler(uint8_t bitvalue)
 	uint32_t apb_prescaler;
 
 	// convert bit code to prescaler value
-	switch(bitvalue)
+	switch (bitvalue)
 	{
-	case(RCC_ABP_PRESCALER_NODIV):
+	case (RCC_ABP_PRESCALER_NODIV):
 		apb_prescaler = 1;
-	break;
-	case(RCC_ABP_PRESCALER_DIV2):
+		break;
+	case (RCC_ABP_PRESCALER_DIV2):
 		apb_prescaler = 2;
-	break;
-	case(RCC_ABP_PRESCALER_DIV4):
+		break;
+	case (RCC_ABP_PRESCALER_DIV4):
 		apb_prescaler = 4;
-	break;
-	case(RCC_ABP_PRESCALER_DIV8):
+		break;
+	case (RCC_ABP_PRESCALER_DIV8):
 		apb_prescaler = 8;
-	break;
-	case(RCC_ABP_PRESCALER_DIV16):
+		break;
+	case (RCC_ABP_PRESCALER_DIV16):
 		apb_prescaler = 16;
-	break;
+		break;
 	}
 
 	return apb_prescaler;
@@ -204,40 +205,39 @@ static uint16_t RCC_GetAhbPrescaler(uint8_t bitvalue)
 	uint32_t ahb_prescaler;
 
 	// convert bit code to prescaler value
-	switch(bitvalue)
+	switch (bitvalue)
 	{
-	case(RCC_HPRE_PRESCALER_NODIV):
+	case (RCC_HPRE_PRESCALER_NODIV):
 		ahb_prescaler = 1;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV2):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV2):
 		ahb_prescaler = 2;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV4):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV4):
 		ahb_prescaler = 4;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV8):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV8):
 		ahb_prescaler = 8;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV16):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV16):
 		ahb_prescaler = 16;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV64):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV64):
 		ahb_prescaler = 64;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV128):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV128):
 		ahb_prescaler = 128;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV256):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV256):
 		ahb_prescaler = 256;
-	break;
-	case(RCC_HPRE_PRESCALER_DIV512):
+		break;
+	case (RCC_HPRE_PRESCALER_DIV512):
 		ahb_prescaler = 512;
-	break;
+		break;
 	}
 
 	return ahb_prescaler;
 }
-
 
 uint32_t RCC_GetSysclk(void)
 {
@@ -261,7 +261,7 @@ uint32_t RCC_GetSysclk(void)
 			break;
 
 		case (RCC_PLLCFGR_PLLSRC_HSE):
-		return RCC_CalculatePllclk(RCC_HSE_FREQUENCY);
+			return RCC_CalculatePllclk(RCC_HSE_FREQUENCY);
 			break;
 		}
 		break;
@@ -274,30 +274,31 @@ uint32_t RCC_GetHclk(void)
 {
 	uint32_t sysclk = RCC_GetSysclk();
 	uint16_t ahb_prescaler = RCC_GetAhbPrescaler((RCC->CFGR & RCC_CFGR_HPRE) >> RCC_CFGR_HPRE_Pos);
-	return  sysclk / ahb_prescaler;
+	return sysclk / ahb_prescaler;
 }
 
 uint32_t RCC_GetPclk(uint8_t plck_x)
 {
 	uint32_t hclk = RCC_GetHclk();
 	uint8_t apb_prescaler;
-	switch(plck_x)
+	switch (plck_x)
 	{
-	case(1):
-	apb_prescaler = RCC_GetApbPrescaler((RCC->CFGR & RCC_CFGR_PPRE1) >> RCC_CFGR_PPRE1_Pos);
-	break;
+	case (1):
+		apb_prescaler = RCC_GetApbPrescaler((RCC->CFGR & RCC_CFGR_PPRE1) >>
+		RCC_CFGR_PPRE1_Pos);
+		break;
 
-	case(2):
-	apb_prescaler = RCC_GetApbPrescaler((RCC->CFGR & RCC_CFGR_PPRE2) >> RCC_CFGR_PPRE2_Pos);
-	break;
+	case (2):
+		apb_prescaler = RCC_GetApbPrescaler((RCC->CFGR & RCC_CFGR_PPRE2) >>
+		RCC_CFGR_PPRE2_Pos);
+		break;
 	}
 
 	return hclk / apb_prescaler;
 }
 
-void RCC_GetClockFrequencies(RCC_ClockFreqs* freqs)
+void RCC_GetClockFrequencies(RCC_ClockFreqs *freqs)
 {
-
 	freqs->sysclk = RCC_GetSysclk();
 	freqs->hclk = RCC_GetHclk();
 	freqs->pclk1 = RCC_GetPclk(1);

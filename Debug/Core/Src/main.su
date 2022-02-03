@@ -1,3 +1,7 @@
-main.c:31:5:main	40	static
-main.c:62:6:GPIOConfig	24	static
-main.c:83:6:EXTI15_10_IRQHandler	8	static
+core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
+main.c:35:5:main	112	static
+main.c:65:6:GPIOConfig	24	static
+main.c:84:6:USART2Config	16	static
+main.c:96:6:DMA1Config	16	static
+main.c:112:6:EXTI15_10_IRQHandler	8	static
+main.c:120:6:USART2_IRQHandler	4	static
