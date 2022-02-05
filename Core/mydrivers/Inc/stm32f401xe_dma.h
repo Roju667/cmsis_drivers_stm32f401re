@@ -77,7 +77,7 @@ typedef enum DmaDirectMode_t
 } DmaDirectMode_t;
 
 /*
- * @Data Width
+ * @DataWidth
  */
 typedef enum DmaDataWidth_t
 {
@@ -107,9 +107,6 @@ typedef struct DMA_Stream_Info
 
 	DMA_Stream_TypeDef *p_dma_stream_rx;
 
-	uint8_t dma_channel_tx;
-
-	uint8_t dma_channel_rx;
 } DMA_Stream_Info;
 
 typedef struct DMA_Stream_Config_t
@@ -126,11 +123,11 @@ typedef struct DMA_Stream_Config_t
 
 	DmaIncrementMode_t mem_increment;  // @IncrementMode
 
-	DmaDataWidth_t mem_data_size;
+	DmaDataWidth_t mem_data_size;  // @DataWidth
 
-	DmaDataWidth_t peri_data_size;
+	DmaDataWidth_t peri_data_size;  // @DataWidth
 
-	DmaCircularMode_t circular_mode;
+	DmaCircularMode_t circular_mode;  // @CircularMode
 
 	uint32_t *p_peri_address;  //  peripheral address to get/put data
 
@@ -143,8 +140,6 @@ typedef struct DMA_Stream_Config_t
 	DmaFifoThreshold_t fifo_threshold;
 
 	DmaFlowControl_t flow_control;  // @FlowControl by DMA or peripheral
-
-	uint16_t no_items;
 
 } DMA_Stream_Config_t;
 
@@ -160,6 +155,9 @@ typedef struct DMA_Handle_t
 
 } DMA_Handle_t;
 
-void Dma_StreamInit(DMA_Handle_t *p_handle_dma);
+void DMA_StreamInit(DMA_Handle_t *p_handle_dma);
+void DMA_WriteAdresses(DMA_Stream_TypeDef *p_dma_streamx, uint32_t *peri_add,
+		uint32_t *mem0_add, uint32_t *mem1_add);
+void DMA_EnableDoubleBufferMode(DMA_Stream_TypeDef *p_dma_streamx);
 
 #endif /* CORE_MYDRIVERS_INC_STM32F401XE_DMA_H_ */

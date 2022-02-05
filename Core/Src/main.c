@@ -18,6 +18,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "stm32f401xe_dma.h"
 #include "stm32f401xe_gpio.h"
@@ -32,33 +33,36 @@ void GPIOConfig(void);
 void USART2Config(USART_Handle_t *p_usart2);
 void DMA1Config(DMA_Handle_t *p_dma1);
 
+
 int main(void)
 {
 	GPIOConfig();
 
 	RCC_CLOCK_USART2_ENABLE();
-	USART_Handle_t p_usart2;
-	DMA_Handle_t p_dma1;
 
-	volatile uint8_t databuffer[16] = "DMA transfer \n\r";
+
+
+	uint8_t databuffer1[16] = "DMA speedbus \n\r";
+	uint8_t databuffer0[16] =
+	{ 0 };
+	DMA_Handle_t p_dma1;
+	USART_Handle_t p_usart2;
+	memset(&p_dma1, 0, sizeof(p_dma1));
 
 	USART2Config(&p_usart2);
 	DMA1Config(&p_dma1);
 
 	NVIC_EnableIRQ(USART2_IRQn);
-	NVIC_EnableIRQ(DMA1_Stream4_IRQn);
-	Usart_TransmitDMA(&p_usart2, databuffer, 16);
-
+	NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+	NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+//	Usart_TransmitDMADoubleBuffer(&p_usart2, databuffer0, databuffer1, 16);
+	Usart_RecieveDMA(&p_usart2, databuffer0, 1);
 	while (1)
 	{
-		for (uint32_t j = 0; j < 10; j++)
+		for (uint32_t i = 0; i < 100000; i++)
 		{
-			for (uint32_t i = 0; i < 100000; i++)
-			{
-			}
-			GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		}
-		//Pwr_EnterStandbyMode(kWFI);
+		GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	}
 }
 
@@ -88,25 +92,31 @@ void USART2Config(USART_Handle_t *p_usart2)
 	p_usart2->usart_config.oversampling = USART_OVERSAMPLING_16;
 	p_usart2->usart_config.word_lenght = USART_WORD_LENGHT_8BITS;
 	p_usart2->usart_config.stop_bits = USART_STOPBITS_1;
-	p_usart2->usart_dma.dma_channel_tx = kChannel5;
 	p_usart2->usart_dma.p_dma_stream_tx = DMA1_Stream6;
+	p_usart2->usart_dma.p_dma_stream_rx = DMA1_Stream5;
 	Usart_Init(p_usart2);
 }
 
 void DMA1Config(DMA_Handle_t *p_dma1)
 {
+	//read
 	p_dma1->p_dmax = DMA1;
-	p_dma1->p_dma_streamx = DMA1_Stream6;
+	p_dma1->p_dma_streamx = DMA1_Stream5;
 	p_dma1->stream_config.channel_number = kChannel4;
-	p_dma1->stream_config.circular_mode = kCircularDisable;
-	p_dma1->stream_config.direction = kMemToPeri;
+	p_dma1->stream_config.circular_mode = kCircularEnable;
+	p_dma1->stream_config.direction = kPeriToMem;
 	p_dma1->stream_config.mem_data_size = kByte;
 	p_dma1->stream_config.mem_increment = kIncrementEnable;
-	p_dma1->stream_config.p_peri_address = &(USART2->DR);
 	p_dma1->stream_config.peri_data_size = kByte;
 	p_dma1->stream_config.peri_increment = kIncrementDisable;
 
-	Dma_StreamInit(p_dma1);
+	DMA_StreamInit(p_dma1);
+
+	//send
+	p_dma1->p_dma_streamx = DMA1_Stream6;
+	p_dma1->stream_config.direction = kMemToPeri;
+
+	DMA_StreamInit(p_dma1);
 }
 
 void EXTI15_10_IRQHandler(void)
@@ -119,4 +129,17 @@ void EXTI15_10_IRQHandler(void)
 
 void USART2_IRQHandler(void)
 {
+	USART2->SR &= ~(USART_SR_RXNE);
+}
+//send
+void DMA1_Stream6_IRQHandler(void)
+{
+	DMA1->HIFCR |= DMA_HIFCR_CTCIF6;
+
+}
+//read
+void DMA1_Stream5_IRQHandler(void)
+{
+	DMA1->HIFCR |= DMA_HIFCR_CTCIF5;
+
 }
