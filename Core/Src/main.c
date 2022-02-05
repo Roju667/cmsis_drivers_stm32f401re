@@ -25,17 +25,19 @@
 #include "stm32f401xe_pwr.h"
 #include "stm32f401xe_rcc.h"
 #include "stm32f401xe_usart.h"
+#include "stm32f401xe_iwdg.h"
 #include "stm32f4xx.h"
 
-// Uart application
-// - Wait for 16 bit data in DMA mode and save them to double buffers
-// - After single buffer is full send same data back in DMA mode
-// - If line is idle send in blocking mode that its idle
-// - If there is error send in blocking mode that there is error
+// UART demo
+// - start dma recieve mode for 16 chars for double buffer
+// - start single dma transfer for 16 chars
+// - if line is idle or there is an error send message with polling mode
+// - if message is received send it back polling mode
 
 void GPIOConfig(void);
 void USART2Config(USART_Handle_t *p_usart2);
 void DMA1Config(DMA_Handle_t *p_dma1);
+void PrintResetSource(void);
 
 DMA_Handle_t p_dma1;
 USART_Handle_t p_usart2;
@@ -44,6 +46,7 @@ volatile uint8_t SendBuffer1Flag, IdleFlag, ErrorFlag, SendBuffer0Flag;
 
 int main(void)
 {
+
 	GPIOConfig();
 	uint8_t databuffer1[16] =
 	{ 0 };
@@ -56,13 +59,13 @@ int main(void)
 	USART2Config(&p_usart2);
 	DMA1Config(&p_dma1);
 
+	PrintResetSource();
+	IWDG_StartWatchdog();
+
 
 	NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 	NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-	// Usart_TransmitDMADoubleBuffer(&p_usart2, databuffer0, databuffer1, 16);
-	// USART DMA configuration for double buffer - circular mode is enabled
-	// automatically when using double buffer data is copied to data buffer0 then
-	// to databuffer1
+
 	USART_ConfigureReceiveDMA(&p_usart2, databuffer0, databuffer1);
 	USART_ReceiveDMAStart(&p_usart2, 16);
 	USART_ConfigureTransmitDMA(&p_usart2, databuffer2, NULL);
@@ -100,7 +103,51 @@ int main(void)
 			ErrorFlag = 0;
 			USART_Transmit(&p_usart2, (uint8_t*) "ERROR LINE\n\r", 12);
 		}
+
+		IWDG_ReloadWatchdog();
 	}
+}
+
+void PrintResetSource(void)
+{
+	if (RCC->CSR & RCC_CSR_LPWRRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "Low-power reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_WWDGRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "WWDG reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_IWDGRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "IWDG reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_SFTRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "Software reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_PORRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "POR/PDR reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_PINRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "Pin reset \n\r", 16);
+	}
+
+	if (RCC->CSR & RCC_CSR_BORRSTF)
+	{
+		USART_Transmit(&p_usart2, (uint8_t*) "BOR reset \n\r", 16);
+	}
+
+	RCC->CSR |= RCC_CSR_RMVF;
+
+	return;
 }
 
 void GPIOConfig(void)

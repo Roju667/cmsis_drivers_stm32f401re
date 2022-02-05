@@ -8,28 +8,40 @@ C_SRCS += \
 ../Core/mydrivers/Src/stm32f401xe_dma.c \
 ../Core/mydrivers/Src/stm32f401xe_gpio.c \
 ../Core/mydrivers/Src/stm32f401xe_i2c.c \
+../Core/mydrivers/Src/stm32f401xe_iwdg.c \
 ../Core/mydrivers/Src/stm32f401xe_pwr.c \
 ../Core/mydrivers/Src/stm32f401xe_rcc.c \
+../Core/mydrivers/Src/stm32f401xe_rtc.c \
+../Core/mydrivers/Src/stm32f401xe_spi.c \
 ../Core/mydrivers/Src/stm32f401xe_tim.c \
-../Core/mydrivers/Src/stm32f401xe_usart.c 
+../Core/mydrivers/Src/stm32f401xe_usart.c \
+../Core/mydrivers/Src/stm32f401xe_wwdg.c 
 
 OBJS += \
 ./Core/mydrivers/Src/stm32f401xe_dma.o \
 ./Core/mydrivers/Src/stm32f401xe_gpio.o \
 ./Core/mydrivers/Src/stm32f401xe_i2c.o \
+./Core/mydrivers/Src/stm32f401xe_iwdg.o \
 ./Core/mydrivers/Src/stm32f401xe_pwr.o \
 ./Core/mydrivers/Src/stm32f401xe_rcc.o \
+./Core/mydrivers/Src/stm32f401xe_rtc.o \
+./Core/mydrivers/Src/stm32f401xe_spi.o \
 ./Core/mydrivers/Src/stm32f401xe_tim.o \
-./Core/mydrivers/Src/stm32f401xe_usart.o 
+./Core/mydrivers/Src/stm32f401xe_usart.o \
+./Core/mydrivers/Src/stm32f401xe_wwdg.o 
 
 C_DEPS += \
 ./Core/mydrivers/Src/stm32f401xe_dma.d \
 ./Core/mydrivers/Src/stm32f401xe_gpio.d \
 ./Core/mydrivers/Src/stm32f401xe_i2c.d \
+./Core/mydrivers/Src/stm32f401xe_iwdg.d \
 ./Core/mydrivers/Src/stm32f401xe_pwr.d \
 ./Core/mydrivers/Src/stm32f401xe_rcc.d \
+./Core/mydrivers/Src/stm32f401xe_rtc.d \
+./Core/mydrivers/Src/stm32f401xe_spi.d \
 ./Core/mydrivers/Src/stm32f401xe_tim.d \
-./Core/mydrivers/Src/stm32f401xe_usart.d 
+./Core/mydrivers/Src/stm32f401xe_usart.d \
+./Core/mydrivers/Src/stm32f401xe_wwdg.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
