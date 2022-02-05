@@ -27,42 +27,79 @@
 #include "stm32f401xe_usart.h"
 #include "stm32f4xx.h"
 
-volatile uint16_t count_letters = 0;
+// Uart application
+// - Wait for 16 bit data in DMA mode and save them to double buffers
+// - After single buffer is full send same data back in DMA mode
+// - If line is idle send in blocking mode that its idle
+// - If there is error send in blocking mode that there is error
 
 void GPIOConfig(void);
 void USART2Config(USART_Handle_t *p_usart2);
 void DMA1Config(DMA_Handle_t *p_dma1);
 
+DMA_Handle_t p_dma1;
+USART_Handle_t p_usart2;
+
+volatile uint8_t SendBuffer1Flag, IdleFlag, ErrorFlag, SendBuffer0Flag;
 
 int main(void)
 {
 	GPIOConfig();
-
-	RCC_CLOCK_USART2_ENABLE();
-
-
-
-	uint8_t databuffer1[16] = "DMA speedbus \n\r";
+	uint8_t databuffer1[16] =
+	{ 0 };
 	uint8_t databuffer0[16] =
 	{ 0 };
-	DMA_Handle_t p_dma1;
-	USART_Handle_t p_usart2;
+	uint8_t databuffer2[16] = "print dma \n\r";
+
 	memset(&p_dma1, 0, sizeof(p_dma1));
 
 	USART2Config(&p_usart2);
 	DMA1Config(&p_dma1);
 
-	NVIC_EnableIRQ(USART2_IRQn);
+
 	NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 	NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-//	Usart_TransmitDMADoubleBuffer(&p_usart2, databuffer0, databuffer1, 16);
-	Usart_RecieveDMA(&p_usart2, databuffer0, 1);
+	// Usart_TransmitDMADoubleBuffer(&p_usart2, databuffer0, databuffer1, 16);
+	// USART DMA configuration for double buffer - circular mode is enabled
+	// automatically when using double buffer data is copied to data buffer0 then
+	// to databuffer1
+	USART_ConfigureReceiveDMA(&p_usart2, databuffer0, databuffer1);
+	USART_ReceiveDMAStart(&p_usart2, 16);
+	USART_ConfigureTransmitDMA(&p_usart2, databuffer2, NULL);
+	USART_TransmitDMAStart(&p_usart2, 16);
+	
 	while (1)
 	{
 		for (uint32_t i = 0; i < 100000; i++)
 		{
 		}
 		GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+		if (SendBuffer1Flag == 1)
+		{
+			SendBuffer1Flag = 0;
+			USART_Transmit(&p_usart2, (uint8_t*) "\n\r printing db1:", 16);
+			USART_Transmit(&p_usart2, databuffer1, 16);
+		}
+
+		if (SendBuffer0Flag == 1)
+		{
+			SendBuffer0Flag = 0;
+			USART_Transmit(&p_usart2, (uint8_t*) "\n\r printing db0:", 16);
+			USART_Transmit(&p_usart2, databuffer0, 16);
+		}
+
+		if (IdleFlag == 1)
+		{
+			IdleFlag = 0;
+			USART_Transmit(&p_usart2, (uint8_t*) "IDLE LINE\n\r", 11);
+		}
+
+		if (ErrorFlag == 1)
+		{
+			ErrorFlag = 0;
+			USART_Transmit(&p_usart2, (uint8_t*) "ERROR LINE\n\r", 12);
+		}
 	}
 }
 
@@ -85,25 +122,25 @@ void GPIOConfig(void)
 	return;
 }
 
+// template config function
 void USART2Config(USART_Handle_t *p_usart2)
 {
 	p_usart2->p_usartx = USART2;
-	p_usart2->usart_config.baud_rate = 115200;
-	p_usart2->usart_config.oversampling = USART_OVERSAMPLING_16;
-	p_usart2->usart_config.word_lenght = USART_WORD_LENGHT_8BITS;
-	p_usart2->usart_config.stop_bits = USART_STOPBITS_1;
 	p_usart2->usart_dma.p_dma_stream_tx = DMA1_Stream6;
 	p_usart2->usart_dma.p_dma_stream_rx = DMA1_Stream5;
-	Usart_Init(p_usart2);
+	USART_SetBasicParameters(p_usart2, kUsartWordLenght8, kUsartStopBits0,
+			kUsartNoParity);
+	USART_SetBaudRate(p_usart2, 115200, kUsartOversampling16);
+	USART_EnableIRQs(p_usart2, USART_CR1_IDLEIE, 0, USART_CR3_EIE);
 }
 
 void DMA1Config(DMA_Handle_t *p_dma1)
 {
-	//read
+	// read
 	p_dma1->p_dmax = DMA1;
 	p_dma1->p_dma_streamx = DMA1_Stream5;
 	p_dma1->stream_config.channel_number = kChannel4;
-	p_dma1->stream_config.circular_mode = kCircularEnable;
+	p_dma1->stream_config.circular_mode = kCircularDisable;
 	p_dma1->stream_config.direction = kPeriToMem;
 	p_dma1->stream_config.mem_data_size = kByte;
 	p_dma1->stream_config.mem_increment = kIncrementEnable;
@@ -112,34 +149,49 @@ void DMA1Config(DMA_Handle_t *p_dma1)
 
 	DMA_StreamInit(p_dma1);
 
-	//send
+	// send
 	p_dma1->p_dma_streamx = DMA1_Stream6;
 	p_dma1->stream_config.direction = kMemToPeri;
 
 	DMA_StreamInit(p_dma1);
 }
 
-void EXTI15_10_IRQHandler(void)
-{
-	GPIO_ClearPendingEXTIFlag(GPIO_PIN_13);
-	GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-	return;
-}
-
 void USART2_IRQHandler(void)
 {
+	if (USART2->SR & USART_SR_IDLE)
+	{
+		IdleFlag = USART2->DR;
+		IdleFlag = 1;
+	}
+	
+	if (USART2->SR & USART_ERROR_FLAGS)
+	{
+		ErrorFlag = 1;
+	}
+
 	USART2->SR &= ~(USART_SR_RXNE);
+
 }
-//send
+// send
 void DMA1_Stream6_IRQHandler(void)
 {
-	DMA1->HIFCR |= DMA_HIFCR_CTCIF6;
 
+	USART_DMATransmitDoneCallback(&p_usart2);
+	DMA1->HIFCR |= DMA_HIFCR_CTCIF6;
 }
-//read
+// read
 void DMA1_Stream5_IRQHandler(void)
 {
+	USART_DMAReceiveDoneCallback(&p_usart2);
+	// this IRQ we will get after receiving amount of character defined in
+	if (p_usart2.usart_dma.p_dma_stream_rx->CR & (DMA_SxCR_CT))
+	{
+		SendBuffer1Flag = 1;
+	}
+	else
+	{
+		SendBuffer0Flag = 1;
+	}
 	DMA1->HIFCR |= DMA_HIFCR_CTCIF5;
-
+	// USART_ReceiveDMAStart(&p_usart2, 1);
 }

@@ -117,8 +117,6 @@ typedef struct DMA_Stream_Config_t
 
 	DmaDirection_t direction;  //@Direction
 
-	DmaDoubleBuffer_t double_buffer;  // @DoubleBuffer
-
 	DmaIncrementMode_t peri_increment;  // @IncrementMode
 
 	DmaIncrementMode_t mem_increment;  // @IncrementMode
