@@ -1,0 +1,6 @@
+stm32f401xe_wwdg.c:15:10:WWDG_GetMinMaxTimeout	48	static
+stm32f401xe_wwdg.c:55:10:WWDG_GetTimePerWwdgTick	40	static
+stm32f401xe_wwdg.c:85:6:WWDG_SetBasicParameters	16	static
+stm32f401xe_wwdg.c:101:6:WWDG_StartWatchdog	4	static
+stm32f401xe_wwdg.c:113:6:WWDG_ReloadWatchdog	4	static
+stm32f401xe_wwdg.c:123:9:WWDG_GetWatchdog	4	static

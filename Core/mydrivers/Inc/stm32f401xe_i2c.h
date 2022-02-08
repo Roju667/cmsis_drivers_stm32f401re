@@ -90,7 +90,9 @@ typedef struct I2c_Handle_t
  */
 #define I2C_ERROR_WRONG_FREQUENCY 1U
 
-uint8_t I2c_Init(I2c_Handle_t *p_handle_i2c);
-uint8_t I2c_Transmit(I2c_Handle_t *p_hi2c, uint8_t slave_address, uint8_t mem_address, uint8_t *p_data_buffer, uint32_t data_size);
-uint8_t I2c_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *p_rx_data_buffer, uint32_t data_size);
+uint8_t I2C_Init(I2c_Handle_t *p_handle_i2c);
+uint8_t I2C_Transmit(I2c_Handle_t *p_hi2c, uint8_t slave_address,
+		uint8_t mem_address, uint8_t *p_data_buffer, uint32_t data_size);
+uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+		uint8_t *p_rx_data_buffer, uint32_t data_size);
 #endif /* MYDRIVERS_INC_STM32F401XE_I2C_H_ */

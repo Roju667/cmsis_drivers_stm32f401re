@@ -14,6 +14,18 @@
 #define IWDG_RELOAD_VAL 0xAAAA
 #define IWDG_ACCESS_VAL 0x5555
 
+/*
+ *	with 32 kHz LSI times for reload are :
+ *	prescaler	min - max time [ms]
+ *		4		0.125 - 512
+ *		8		0.25  - 1024
+ *		16		0.5   - 2048
+ *		32		1	  - 4096
+ *		64		2	  - 8192
+ *		128		4	  - 16384
+ *		256			  - 32758
+ */
+
 typedef enum IwdgPrescalerDivider_t
 {
 	kIwdgPrescaler4,

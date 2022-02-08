@@ -1,9 +1,1 @@
-core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
-main.c:47:5:main	72	static
-main.c:111:6:PrintResetSource	8	static
-main.c:153:6:GPIOConfig	24	static
-main.c:173:6:USART2Config	16	static
-main.c:184:6:DMA1Config	16	static
-main.c:206:6:USART2_IRQHandler	4	static
-main.c:223:6:DMA1_Stream6_IRQHandler	8	static
-main.c:230:6:DMA1_Stream5_IRQHandler	8	static
+main.c:21:5:main	8	static
