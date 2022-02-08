@@ -22,6 +22,7 @@ OBJCOPY_BIN :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Core/devices/Src \
 Core/examples/Src \
 Core/mydrivers/Src \
 

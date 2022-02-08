@@ -16,9 +16,9 @@
  *
  ******************************************************************************
  */
-#include "wwdg_example.h"
-
+// #include "wwdg_example.h"
+#include "i2c_bmp180_example.h"
 int main(void)
 {
-	wwdg_example();
+	i2c_bmp180_example();
 }

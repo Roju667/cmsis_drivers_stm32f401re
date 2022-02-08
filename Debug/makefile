@@ -11,6 +11,7 @@ RM := rm -rf
 -include sources.mk
 -include Core/mydrivers/Src/subdir.mk
 -include Core/examples/Src/subdir.mk
+-include Core/devices/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk

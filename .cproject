@@ -43,6 +43,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.1662650940" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
+									<listOptionValue builtIn="false" value="../Core/devices/Inc"/>
 									<listOptionValue builtIn="false" value="../Core/examples/Inc"/>
 									<listOptionValue builtIn="false" value="../Core/mydrivers/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
@@ -74,8 +75,9 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.325208660.946026844" name="usart_dma_example.h" rcbsApplicability="disable" resourcePath="Core/examples/Inc/usart_dma_example.h" toolsToInvoke=""/>
+					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.325208660.893078086" name="wwdg_example.h" rcbsApplicability="disable" resourcePath="Core/examples/Inc/wwdg_example.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Core/examples/Inc/usart_dma_example.h|Core/examples/Src/usart_dma_example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Core/examples/Inc/wwdg_example.h|Core/examples/Src/wwdg_example.c|Core/examples/Inc/usart_dma_example.h|Core/examples/Src/usart_dma_example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

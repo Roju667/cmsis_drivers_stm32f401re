@@ -135,12 +135,68 @@ static void I2C_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 }
 
 /*
- * Init I2C peripheral
+ * Init speed, CCR and TRISE registers
  *
  * @param[*p_handle_i2c] - handler to i2c structure
+ * @param[speed] - i2c desired speed
  * @return - void
  */
-uint8_t I2C_Init(I2c_Handle_t *p_handle_i2c)
+static void I2C_CalculateCCRandTRISE(I2c_Handle_t *p_handle_i2c,
+		I2cSpeed_t speed)
+{
+	// set speed
+	uint16_t temp_ccr, temp_trise;
+	uint8_t pclk_freq_Mhz = RCC_GetPclk(1) / 1000000;
+
+	// set slow mode, reset DUTY
+	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_FS);
+	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_DUTY);
+
+	// CCR calculation for slow mode -> values are coming from RM CCR register and
+	// result is in [ns] (Thigh + Tlow) / (CEOFF * PCLK)
+	temp_ccr = (I2C_CCR_SM_THIGH + I2C_CCR_SM_TLOW)
+			/ (I2C_CCR_SM_COEFF * (1000 / pclk_freq_Mhz));
+
+	// TRISE calculation for slow mode -> equation is from RM
+	temp_trise = ((I2C_CCR_SM_TR_SCL * pclk_freq_Mhz) / 1000) + 1;
+
+	// fast mode
+	if (speed != kI2cSpeedSlow)
+	{
+		// set fast mode
+		p_handle_i2c->p_i2cx->CCR |= I2C_CCR_FS;
+		// calculate CCR for fast mode with DUTY 0
+		temp_ccr = (I2C_CCR_FM_THIGH + I2C_CCR_FM_TLOW)
+				/ (I2C_CCR_FM_COEFF_DUTY0 * (1000 / pclk_freq_Mhz));
+		// calculate TRISE for fast mode
+		temp_trise = ((I2C_CCR_FM_TR_SCL * pclk_freq_Mhz) / 1000) + 1;
+		if (speed == kI2cSpeedFastDuty1)
+		{
+			// set DUTY flag
+			p_handle_i2c->p_i2cx->CCR |= I2C_CCR_DUTY;
+			// calculate CCR with fast mode DUTY1
+			temp_ccr = (I2C_CCR_FM_THIGH + I2C_CCR_FM_TLOW)
+					/ (I2C_CCR_FM_COEFF_DUTY1 * (1000 / pclk_freq_Mhz));
+		}
+	}
+	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_CCR);
+	p_handle_i2c->p_i2cx->CCR |= (temp_ccr << I2C_CCR_CCR_Pos);
+
+	// write correct TRISE to the register
+	p_handle_i2c->p_i2cx->TRISE &= ~(I2C_TRISE_TRISE);
+	p_handle_i2c->p_i2cx->TRISE |= (temp_trise << I2C_TRISE_TRISE_Pos);
+
+	return;
+}
+
+/*
+ * Basic init function
+ *
+ * @param[*p_handle_i2c] - handler to i2c structure
+ * @param[speed] - i2c desired speed
+ * @return - void
+ */
+void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 {
 	// enable peripheral clock
 	I2C_ClockEnable(p_handle_i2c->p_i2cx);
@@ -153,56 +209,25 @@ uint8_t I2C_Init(I2c_Handle_t *p_handle_i2c)
 	p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_SWRST);
 
 	// check frequency limits
-	if (p_handle_i2c->i2c_config.abp1_freq_mhz < I2C_FREQUENCY_MINIMUM || p_handle_i2c->i2c_config.abp1_freq_mhz > I2C_FREQUENCY_MAXIMUM)
+	if (RCC_GetPclk(1) < I2C_FREQUENCY_MINIMUM
+			|| RCC_GetPclk(1) > I2C_FREQUENCY_MAXIMUM)
 	{
-		return I2C_ERROR_WRONG_FREQUENCY;
+		p_handle_i2c->error = kI2cErrWrongPclkFreq;
+		return;
 	}
 
 	// set frequency (same as ABP1 frequency)
 	p_handle_i2c->p_i2cx->CR2 &= ~(I2C_CR2_FREQ);
-	p_handle_i2c->p_i2cx->CR2 |= (p_handle_i2c->i2c_config.abp1_freq_mhz << I2C_CR2_FREQ_Pos);
+	p_handle_i2c->p_i2cx->CR2 |=
+			((RCC_GetPclk(1) / 1000000) << I2C_CR2_FREQ_Pos);
 
-	// set speed
-	uint16_t temp_ccr, temp_trise;
-	// set slow mode, reset DUTY
-	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_FS);
-	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_DUTY);
-
-	// CCR calculation for slow mode -> values are coming from RM CCR register and
-	// result is in [ns] (Thigh + Tlow) / (CEOFF * PCLK)
-	temp_ccr = (I2C_CCR_SM_THIGH + I2C_CCR_SM_TLOW) / (I2C_CCR_SM_COEFF * (1000 / p_handle_i2c->i2c_config.abp1_freq_mhz));
-
-	// TRISE calculation for slow mode -> equation is from RM
-	temp_trise = ((I2C_CCR_SM_TR_SCL * p_handle_i2c->i2c_config.abp1_freq_mhz) / 1000) + 1;
-
-	// fast mode
-	if (p_handle_i2c->i2c_config.speed != I2C_SPEED_SLOW)
-	{
-		// set fast mode
-		p_handle_i2c->p_i2cx->CCR |= I2C_CCR_FS;
-		// calculate CCR for fast mode with DUTY 0
-		temp_ccr = (I2C_CCR_FM_THIGH + I2C_CCR_FM_TLOW) / (I2C_CCR_FM_COEFF_DUTY0 * (1000 / p_handle_i2c->i2c_config.abp1_freq_mhz));
-		// calculate TRISE for fast mode
-		temp_trise = ((I2C_CCR_FM_TR_SCL * p_handle_i2c->i2c_config.abp1_freq_mhz) / 1000) + 1;
-		if (p_handle_i2c->i2c_config.speed == I2C_SPEED_FAST_DUTY1)
-		{
-			// set DUTY flag
-			p_handle_i2c->p_i2cx->CCR |= I2C_CCR_DUTY;
-			// calculate CCR with fast mode DUTY1
-			temp_ccr = (I2C_CCR_FM_THIGH + I2C_CCR_FM_TLOW) / (I2C_CCR_FM_COEFF_DUTY1 * (1000 / p_handle_i2c->i2c_config.abp1_freq_mhz));
-		}
-	}
-	p_handle_i2c->p_i2cx->CCR &= ~(I2C_CCR_CCR);
-	p_handle_i2c->p_i2cx->CCR |= (temp_ccr << I2C_CCR_CCR_Pos);
-
-	// write correct TRISE to the register
-	p_handle_i2c->p_i2cx->TRISE &= ~(I2C_TRISE_TRISE);
-	p_handle_i2c->p_i2cx->TRISE |= (temp_trise << I2C_TRISE_TRISE_Pos);
+	I2C_CalculateCCRandTRISE(p_handle_i2c, speed);
 
 	// enable I2c
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_PE;
 
-	return 0;
+	p_handle_i2c->error = kI2cErrNoError;
+	return;
 }
 
 /*
@@ -210,26 +235,24 @@ uint8_t I2C_Init(I2c_Handle_t *p_handle_i2c)
  *
  * @param[*p_handle_i2c] - pointer to handler to i2c structure
  * @param[slave_address] - address to slave in 7 bit addressing mode
- * @param[mode] - send information if master is in reciever or transmitter mode
+ * @param[mode] - send information if master is in receiver or transmitter mode
  * @Mode
  * @return - void
  */
 static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
-		uint8_t mode, uint32_t timeout)
+		uint8_t mode)
 {
 	uint8_t temp_byte;
-	uint32_t temp_timeout = 0;
 	// 1.0 Set START BIT
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_START;
 
 	// 1.1 Wait until SB flag is set
 	while (!(I2C_SR1_SB & p_handle_i2c->p_i2cx->SR1))
-		if (temp_timeout > timeout)
 			break;;
 	// 1.2 Clear SB by reading SR1
 	temp_byte = p_handle_i2c->p_i2cx->SR1;
-	// If transmitting set slave addres LSB to 0, reciever 1
+	// If transmitting set slave addres LSB to 0, receiver 1
 	slave_address &= (~1U);
 	slave_address |= mode;
 	// 2. Put slave address in DR register -
@@ -250,10 +273,9 @@ uint8_t I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
 {
 	uint32_t tx_data_to_send = data_size;
-	uint32_t tx_data_index = 0;
 	uint8_t temp_byte;
 
-	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_TRANSMITTER, 400000);
+	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_TRANSMITTER);
 
 	// wait until ADDR is set
 	while (!(I2C_SR1_ADDR & p_handle_i2c->p_i2cx->SR1))
@@ -276,11 +298,11 @@ uint8_t I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 			;
 
 		// put data in data register
-		p_handle_i2c->p_i2cx->DR = p_tx_data_buffer[tx_data_index];
+		p_handle_i2c->p_i2cx->DR =
+				p_tx_data_buffer[data_size - tx_data_to_send];
 
 		// change counters
 		tx_data_to_send--;
-		tx_data_index++;
 
 		// 8. After last bit is written to DR register , Set STOP bit  and interface
 		// is going back to slave mode
@@ -297,18 +319,18 @@ uint8_t I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	return 0;
 }
 
-uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+uint8_t I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t *p_rx_data_buffer, uint32_t data_size)
 {
 	uint32_t rx_data_to_get = data_size;
 	uint8_t temp_byte;
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
-	I2c_SendAddress(p_handle_i2c, slave_address, I2C_MODE_RECIEVER, 400000);
+	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_RECEIVER);
 
 	while (!(I2C_SR1_ADDR & p_handle_i2c->p_i2cx->SR1))
 		;
 
-	// single byte recieve
+	// single byte receive
 	if (data_size == 1)
 	{
 		// Disable acknowledge
@@ -320,7 +342,7 @@ uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		// stop comm
 		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
 
-		// wait for a byte recieved
+		// wait for a byte received
 		while (!(I2C_SR1_RXNE & p_handle_i2c->p_i2cx->SR1))
 			;
 
@@ -329,7 +351,7 @@ uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		return 0;
 	}
 
-	// multiple bytes recieve
+	// multiple bytes receive
 	while (rx_data_to_get > 2)
 	{
 		// 4. ADDR is cleared by reading SR1 , Read SR2
@@ -344,7 +366,7 @@ uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 			p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
 			rx_data_to_get--;
 
-			// ack recieve
+			// ack receive
 			p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 		}
 
@@ -358,7 +380,7 @@ uint8_t I2C_Recieve(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_ACK);
 		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
 
-		// recieve last byte
+		// receive last byte
 		while (!(I2C_SR1_RXNE & p_handle_i2c->p_i2cx->SR1))
 			;
 		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
