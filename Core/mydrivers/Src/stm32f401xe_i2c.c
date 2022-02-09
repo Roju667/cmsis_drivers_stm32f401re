@@ -6,12 +6,11 @@
  */
 
 #include "stm32f401xe_i2c.h"
-
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_rcc.h"
 
 /*
- * Start clock for GPIO
+ * Start clock for I2C
  *
  * @param[*p_i2cx] - base address of i2c peripheral
  * @return - void
@@ -41,97 +40,97 @@ static void I2C_ClockEnable(I2C_TypeDef *p_i2cx)
  */
 static void I2C_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
 {
-	GPIO_Handle_t gpio_sda, gpio_scl;
-
-	if (p_i2cx == I2C1)
-	{
-		// PB6 SCL
-		gpio_scl.pGPIOx = GPIOB;
-		gpio_scl.PinConfig.PinNumber = GPIO_PIN_6;
-
-		// PB7 SDA
-		gpio_sda.pGPIOx = GPIOB;
-		gpio_sda.PinConfig.PinNumber = GPIO_PIN_7;
-
-		// Alternate Function
-		gpio_scl.PinConfig.AF = GPIO_PIN_AF_AF4;
-		gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF4;
-
-		if (alternate_pos == 1)
-		{
-			// PB8 SCL
-			gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
-			// PB9 SDA
-			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
-		}
-	}
-
-	if (p_i2cx == I2C2)
-	{
-		// PB10 SCL
-		gpio_scl.pGPIOx = GPIOB;
-		gpio_scl.PinConfig.PinNumber = GPIO_PIN_10;
-
-		// PB11 SDA
-		gpio_sda.pGPIOx = GPIOB;
-		gpio_sda.PinConfig.PinNumber = GPIO_PIN_11;
-
-		// Alternate Function
-		gpio_scl.PinConfig.AF = GPIO_PIN_AF_AF4;
-		gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF4;
-
-		if (alternate_pos == 1)
-		{
-			// PB3 SDA
-			gpio_sda.PinConfig.PinNumber = GPIO_PIN_3;
-			gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF9;
-		}
-	}
-
-	if (p_i2cx == I2C3)
-	{
-		// PA8 SCL
-		gpio_scl.pGPIOx = GPIOA;
-		gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
-
-		// PB9 SDA
-		gpio_sda.pGPIOx = GPIOB;
-		gpio_sda.PinConfig.PinNumber = GPIO_PIN_4;
-
-		// Alternate Function
-		gpio_scl.PinConfig.AF = GPIO_PIN_AF_AF4;
-		gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF4;
-
-		if (alternate_pos == 1)
-		{
-			RCC_CLOCK_GPIOC_ENABLE();
-			// PC9 SDA
-			gpio_sda.pGPIOx = GPIOC;
-			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
-
-			// Alternate Function
-			gpio_sda.PinConfig.AF = GPIO_PIN_AF_AF9;
-		}
-	}
-
-	// Mode AF
-	gpio_scl.PinConfig.Mode = GPIO_PIN_MODE_AF;
-	gpio_sda.PinConfig.Mode = GPIO_PIN_MODE_AF;
-
-	// Output type open drain
-	gpio_scl.PinConfig.OutputType = GPIO_PIN_OT_OD;
-	gpio_sda.PinConfig.OutputType = GPIO_PIN_OT_OD;
-
-	// Output speed very high
-	gpio_scl.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-	gpio_sda.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-
-	// Pull ups
-	gpio_scl.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-	gpio_sda.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-
-	GPIO_InitPin(&gpio_sda);
-	GPIO_InitPin(&gpio_scl);
+//	GPIO_Handle_t gpio_sda, gpio_scl;
+//
+//	if (p_i2cx == I2C1)
+//	{
+//		// PB6 SCL
+//		gpio_scl.pGPIOx = GPIOB;
+//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_6;
+//
+//		// PB7 SDA
+//		gpio_sda.pGPIOx = GPIOB;
+//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_7;
+//
+//		// Alternate Function
+//		gpio_scl.PinConfig.AF = kGpioAF4;
+//		gpio_sda.PinConfig.AF = kGpioAF4;
+//
+//		if (alternate_pos == 1)
+//		{
+//			// PB8 SCL
+//			gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
+//			// PB9 SDA
+//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
+//		}
+//	}
+//
+//	if (p_i2cx == I2C2)
+//	{
+//		// PB10 SCL
+//		gpio_scl.pGPIOx = GPIOB;
+//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_10;
+//
+//		// PB11 SDA
+//		gpio_sda.pGPIOx = GPIOB;
+//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_11;
+//
+//		// Alternate Function
+//		gpio_scl.PinConfig.AF = kGpioAF4;
+//		gpio_sda.PinConfig.AF = kGpioAF4;
+//
+//		if (alternate_pos == 1)
+//		{
+//			// PB3 SDA
+//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_3;
+//			gpio_sda.PinConfig.AF = kGpioAF9;
+//		}
+//	}
+//
+//	if (p_i2cx == I2C3)
+//	{
+//		// PA8 SCL
+//		gpio_scl.pGPIOx = GPIOA;
+//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
+//
+//		// PB9 SDA
+//		gpio_sda.pGPIOx = GPIOB;
+//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_4;
+//
+//		// Alternate Function
+//		gpio_scl.PinConfig.AF = kGpioAF4;
+//		gpio_sda.PinConfig.AF = kGpioAF4;
+//
+//		if (alternate_pos == 1)
+//		{
+//			RCC_CLOCK_GPIOC_ENABLE();
+//			// PC9 SDA
+//			gpio_sda.pGPIOx = GPIOC;
+//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
+//
+//			// Alternate Function
+//			gpio_sda.PinConfig.AF = kGpioAF9;
+//		}
+//	}
+//
+//	// Mode AF
+//	gpio_scl.PinConfig.Mode = GPIO_PIN_MODE_AF;
+//	gpio_sda.PinConfig.Mode = GPIO_PIN_MODE_AF;
+//
+//	// Output type open drain
+//	gpio_scl.PinConfig.OutputType = GPIO_PIN_OT_OD;
+//	gpio_sda.PinConfig.OutputType = GPIO_PIN_OT_OD;
+//
+//	// Output speed very high
+//	gpio_scl.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
+//	gpio_sda.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
+//
+//	// Pull ups
+//	gpio_scl.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
+//	gpio_sda.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
+//
+//	GPIO_InitPin(&gpio_sda);
+//	GPIO_InitPin(&gpio_scl);
 }
 
 /*

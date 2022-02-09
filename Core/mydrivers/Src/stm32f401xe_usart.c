@@ -55,41 +55,41 @@ static void USART_ClockEnable(USART_Handle_t *p_handle_usart)
  */
 static void USART_InitGpioPins(USART_Handle_t *p_handle_usart)
 {
-	GPIO_Handle_t gpio_rx, gpio_tx;
-
-	if (p_handle_usart->p_usartx == USART2)
-	{
-		// PB6 RX
-		gpio_rx.pGPIOx = GPIOA;
-		gpio_rx.PinConfig.PinNumber = GPIO_PIN_3;
-
-		// PB7 TX
-		gpio_tx.pGPIOx = GPIOA;
-		gpio_tx.PinConfig.PinNumber = GPIO_PIN_2;
-
-		// Alternate Function
-		gpio_rx.PinConfig.AF = GPIO_PIN_AF_AF7;
-		gpio_tx.PinConfig.AF = GPIO_PIN_AF_AF7;
-	}
-
-	// Mode AF
-	gpio_rx.PinConfig.Mode = GPIO_PIN_MODE_AF;
-	gpio_tx.PinConfig.Mode = GPIO_PIN_MODE_AF;
-
-	// Output type open drain
-	gpio_rx.PinConfig.OutputType = GPIO_PIN_OT_OD;
-	gpio_tx.PinConfig.OutputType = GPIO_PIN_OT_OD;
-
-	// Output speed very high
-	gpio_rx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-	gpio_tx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-
-	// Pull ups
-	gpio_rx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-	gpio_tx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-
-	GPIO_InitPin(&gpio_rx);
-	GPIO_InitPin(&gpio_tx);
+//	GPIO_Handle_t gpio_rx, gpio_tx;
+//
+//	if (p_handle_usart->p_usartx == USART2)
+//	{
+//		// PB6 RX
+//		gpio_rx.pGPIOx = GPIOA;
+//		gpio_rx.PinConfig.PinNumber = GPIO_PIN_3;
+//
+//		// PB7 TX
+//		gpio_tx.pGPIOx = GPIOA;
+//		gpio_tx.PinConfig.PinNumber = GPIO_PIN_2;
+//
+//		// Alternate Function
+//		gpio_rx.PinConfig.AF = GPIO_PIN_AF_AF7;
+//		gpio_tx.PinConfig.AF = GPIO_PIN_AF_AF7;
+//	}
+//
+//	// Mode AF
+//	gpio_rx.PinConfig.Mode = GPIO_PIN_MODE_AF;
+//	gpio_tx.PinConfig.Mode = GPIO_PIN_MODE_AF;
+//
+//	// Output type open drain
+//	gpio_rx.PinConfig.OutputType = GPIO_PIN_OT_OD;
+//	gpio_tx.PinConfig.OutputType = GPIO_PIN_OT_OD;
+//
+//	// Output speed very high
+//	gpio_rx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
+//	gpio_tx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
+//
+//	// Pull ups
+//	gpio_rx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
+//	gpio_tx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
+//
+//	GPIO_InitPin(&gpio_rx);
+//	GPIO_InitPin(&gpio_tx);
 }
 /*
  * calculate and write in baud rate divider

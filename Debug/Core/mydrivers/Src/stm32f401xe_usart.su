@@ -1,6 +1,6 @@
 core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
 stm32f401xe_usart.c:37:13:USART_ClockEnable	16	static
-stm32f401xe_usart.c:56:13:USART_InitGpioPins	40	static
+stm32f401xe_usart.c:56:13:USART_InitGpioPins	16	static
 stm32f401xe_usart.c:97:6:USART_SetBaudRate	56	static
 stm32f401xe_usart.c:154:6:USART_EnableIRQs	24	static
 stm32f401xe_usart.c:182:6:USART_SetBasicParameters	16	static

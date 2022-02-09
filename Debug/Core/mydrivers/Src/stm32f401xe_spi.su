@@ -1,0 +1,2 @@
+stm32f401xe_spi.c:20:13:SPI_ClockEnable	16	static
+stm32f401xe_spi.c:316:6:SPI_InitGpioPins	16	static

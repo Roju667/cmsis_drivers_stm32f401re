@@ -30,7 +30,7 @@ typedef enum I2cError_t
 
 typedef struct I2c_Handle_t
 {
-	I2C_TypeDef *p_i2cx;  // @GPIOaddress
+	I2C_TypeDef *p_i2cx;
 
 	I2cError_t error;
 

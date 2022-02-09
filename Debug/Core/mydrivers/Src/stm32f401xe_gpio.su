@@ -1,5 +1,10 @@
-stm32f401xe_gpio.c:18:13:GPIO_ClockEnable	16	static,ignoring_inline_asm
-stm32f401xe_gpio.c:58:6:GPIO_InitPin	32	static
-stm32f401xe_gpio.c:149:6:GPIO_WritePin	16	static
-stm32f401xe_gpio.c:162:6:GPIO_TogglePin	16	static
-stm32f401xe_gpio.c:173:6:GPIO_ClearPendingEXTIFlag	16	static
+core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
+stm32f401xe_gpio.c:17:6:GPIO_InitClock	16	static,ignoring_inline_asm
+stm32f401xe_gpio.c:66:6:GPIO_ConfigBasic	16	static
+stm32f401xe_gpio.c:90:6:GPIO_ConfigOutput	16	static
+stm32f401xe_gpio.c:112:6:GPIO_ConifgAF	16	static
+stm32f401xe_gpio.c:128:6:GPIO_ConfigEXTI	24	static
+stm32f401xe_gpio.c:183:6:GPIO_WritePin	16	static
+stm32f401xe_gpio.c:195:9:GPIO_ReadPin	16	static
+stm32f401xe_gpio.c:206:6:GPIO_TogglePin	16	static
+stm32f401xe_gpio.c:216:6:GPIO_ClearPendingEXTIFlag	16	static

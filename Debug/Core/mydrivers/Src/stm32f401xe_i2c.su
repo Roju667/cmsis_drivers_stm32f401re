@@ -1,7 +1,7 @@
-stm32f401xe_i2c.c:19:13:I2C_ClockEnable	16	static
-stm32f401xe_i2c.c:42:13:I2C_InitGpioPins	40	static
-stm32f401xe_i2c.c:144:13:I2C_CalculateCCRandTRISE	24	static
-stm32f401xe_i2c.c:199:6:I2C_SetBasicParameters	16	static
-stm32f401xe_i2c.c:242:13:I2C_SendAddress	24	static
-stm32f401xe_i2c.c:272:9:I2C_Transmit	32	static
-stm32f401xe_i2c.c:322:9:I2C_Receive	32	static
+stm32f401xe_i2c.c:18:13:I2C_ClockEnable	16	static
+stm32f401xe_i2c.c:41:13:I2C_InitGpioPins	16	static
+stm32f401xe_i2c.c:143:13:I2C_CalculateCCRandTRISE	24	static
+stm32f401xe_i2c.c:198:6:I2C_SetBasicParameters	16	static
+stm32f401xe_i2c.c:241:13:I2C_SendAddress	24	static
+stm32f401xe_i2c.c:271:9:I2C_Transmit	32	static
+stm32f401xe_i2c.c:321:9:I2C_Receive	32	static

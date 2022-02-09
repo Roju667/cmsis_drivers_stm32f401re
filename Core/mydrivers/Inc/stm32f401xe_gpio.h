@@ -10,109 +10,102 @@
 
 #include "stm32f401xe.h"
 
-// Struct to configure pin @PinConfig
-typedef struct
+// @GPIOAlternatefunction
+typedef enum
 {
-	uint8_t PinNumber;			// @PinNumber
-
-	uint8_t Mode;				// @GPIOModes
-
-	uint8_t OutputType;			// @OutputType
-
-	uint8_t OutputSpeed;		// @GPIOSpeed
-
-	uint8_t PullUpPullDown;		// @GPIOPullUpPullDown
-
-	uint8_t AF;					// @GPIOAlternatefunction
-
-}GPIO_PinConfig_t;
-
-typedef struct
-{
-	GPIO_TypeDef	*pGPIOx;	// @GPIOaddress
-
-	GPIO_PinConfig_t PinConfig;	// @PinConfig
-
-}GPIO_Handle_t;
+	kGpioAF0,
+	kGpioAF1,
+	kGpioAF2,
+	kGpioAF3,
+	kGpioAF4,
+	kGpioAF5,
+	kGpioAF6,
+	kGpioAF7,
+	kGpioAF8,
+	kGpioAF9,
+	kGpioAF10,
+	kGpioAF11,
+	kGpioAF12,
+	kGpioAF13,
+	kGpioAF14,
+	kGpioAF015
+} GpioAF_t;
 
 // @PinNumber
-#define GPIO_PIN_0					0U
-#define GPIO_PIN_1					1U
-#define GPIO_PIN_2					2U
-#define GPIO_PIN_3					3U
-#define GPIO_PIN_4					4U
-#define GPIO_PIN_5					5U
-#define GPIO_PIN_6					6U
-#define GPIO_PIN_7					7U
-#define GPIO_PIN_8					8U
-#define GPIO_PIN_9					9U
-#define GPIO_PIN_10					10U
-#define GPIO_PIN_11					11U
-#define GPIO_PIN_12					12U
-#define GPIO_PIN_13					13U
-#define GPIO_PIN_14					14U
-#define GPIO_PIN_15					15U
-
+typedef enum
+{
+	kGpioPin0,
+	kGpioPin1,
+	kGpioPin2,
+	kGpioPin3,
+	kGpioPin4,
+	kGpioPin5,
+	kGpioPin6,
+	kGpioPin7,
+	kGpioPin8,
+	kGpioPin9,
+	kGpioPin10,
+	kGpioPin11,
+	kGpioPin12,
+	kGpioPin13,
+	kGpioPin14,
+	kGpioPin15
+} GpioPinNumber_t;
 
 // @GPIOModes
-#define GPIO_PIN_MODE_INPUT			0U
-#define GPIO_PIN_MODE_OUTPUT	 	1U
-#define GPIO_PIN_MODE_AF			2U
-#define GPIO_PIN_MODE_ANALOG		3U
-#define GPIO_PIN_MODE_EXTI_FT		4U
-#define GPIO_PIN_MODE_EXTI_RT		5U
-#define GPIO_PIN_MODE_EXTI_FTRT		6U
+typedef enum
+{
+	kGpioModeInput, kGpioModeOutput, kGpioModeAF, kGpioModeAnalog
+} GpioMode_t;
 
-// GPIO
-#define GPIO_PIN_OT_PP				0U
-#define GPIO_PIN_OT_OD				1U
-
+// @GPIO OutputType
+typedef enum
+{
+	kGpioOTPushPull, kGpioOTOpenDrain
+} GpioOutputType_t;
 
 // @GPIOSpeed
-#define GPIO_PIN_SPEED_LOW			0U
-#define GPIO_PIN_SPEED_MEDIUM		1U
-#define GPIO_PIN_SPEED_HIGH			2U
-#define GPIO_PIN_SPEED_VERYHIGH		3U
+typedef enum
+{
+	kGpioSpeedLow, kGpioSpeedMedium, kGpioSpeedHigh, kGpioSpeedVeryHigh
+} GpioSpeed_t;
 
-// @GPIOPullUpPullDown
-#define GPIO_PIN_PUPD_NOPULL		0U
-#define GPIO_PIN_PUPD_PULLUP		1U
-#define GPIO_PIN_PUPD_PULLDOWN		2U
+// @PUPD
+typedef enum
+{
+	kGpioPUPDNoPull, kGpioPUPDPullup, kGPIOPUPDPulldown
+} GpioPUPD_t;
 
-// @GPIOAlternatefunction
-#define GPIO_PIN_AF_AF0				0U
-#define GPIO_PIN_AF_AF1				1U
-#define GPIO_PIN_AF_AF2				2U
-#define GPIO_PIN_AF_AF3				3U
-#define GPIO_PIN_AF_AF4				4U
-#define GPIO_PIN_AF_AF5				5U
-#define GPIO_PIN_AF_AF6				6U
-#define GPIO_PIN_AF_AF7				7U
-#define GPIO_PIN_AF_AF8				8U
-#define GPIO_PIN_AF_AF9				9U
-#define GPIO_PIN_AF_AF10			10U
-#define GPIO_PIN_AF_AF11			11U
-#define GPIO_PIN_AF_AF12			12U
-#define GPIO_PIN_AF_AF13			13U
-#define GPIO_PIN_AF_AF14			14U
-#define GPIO_PIN_AF_AF15			15U
+typedef enum
+{
+	kGpioFallingTrig, kGpioRisingTrig, kGpioFallingRisingTrig
+} GpioEXTITrigger_t;
 
 // @GPIOPinState
-#define GPIO_PIN_RESET				1U
-#define GPIO_PIN_SET				1U
+#define GPIO_PIN_RESET 1U
+#define GPIO_PIN_SET 1U
 
 // Get code to configure IRQ
-#define GPIO_BASEADDR_TO_CODE(x)      ( (x == GPIOA)?0:\
-										(x == GPIOB)?1:\
-										(x == GPIOC)?2:\
-										(x == GPIOD)?3:\
-								        (x == GPIOE)?4:\
-								        (x == GPIOH)?7:0)
+#define GPIO_BASEADDR_TO_CODE(x) \
+  ((x == GPIOA)   ? 0            \
+   : (x == GPIOB) ? 1            \
+   : (x == GPIOC) ? 2            \
+   : (x == GPIOD) ? 3            \
+   : (x == GPIOE) ? 4            \
+   : (x == GPIOH) ? 7            \
+                  : 0)
 
-
-void GPIO_InitPin(GPIO_Handle_t *hGPIO);
-void GPIO_WritePin(GPIO_TypeDef *GPIO, uint8_t PinNumber, uint8_t PinState);
+void GPIO_InitClock(GPIO_TypeDef *GPIO);
+void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioMode_t mode, GpioPUPD_t PUPD);
+void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioOutputType_t output_type, GpioSpeed_t speed);
+void GPIO_ConifgAF(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin, GpioAF_t af);
+void GPIO_ConfigEXTI(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioEXTITrigger_t trigger);
+void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, uint8_t pin, uint8_t pin_state);
 void GPIO_TogglePin(GPIO_TypeDef *GPIO, uint8_t PinNumber);
+uint8_t GPIO_ReadPin(GPIO_TypeDef *p_GPIOx, uint8_t pin);
 void GPIO_ClearPendingEXTIFlag(uint8_t PinNumber);
 
 #endif /* MYDRIVERS_INC_STM32F401XE_GPIO_H_ */

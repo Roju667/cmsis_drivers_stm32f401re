@@ -10,7 +10,6 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include Core/mydrivers/Src/subdir.mk
--include Core/examples/Src/subdir.mk
 -include Core/devices/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk

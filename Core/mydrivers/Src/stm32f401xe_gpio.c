@@ -10,36 +10,41 @@
 #include "stm32f401xe_rcc.h"
 
 /*
- * Start clock for GPIO
- *
- * @param[*GPIO] - base address of gpiox peripheral
+ * Starts clock for GPIO and resets the peripheral
+ * @param[*p_GPIOx] - gpiox base address
  * @return - void
  */
-static void GPIO_ClockEnable(GPIO_TypeDef *GPIO)
+void GPIO_InitClock(GPIO_TypeDef *GPIO)
 {
 	if (GPIO == GPIOA)
 	{
 		RCC_CLOCK_GPIOA_ENABLE();
+		RCC_RESET_GPIOA();
 	}
 	else if (GPIO == GPIOB)
 	{
 		RCC_CLOCK_GPIOB_ENABLE();
+		RCC_RESET_GPIOB();
 	}
 	else if (GPIO == GPIOC)
 	{
 		RCC_CLOCK_GPIOC_ENABLE();
+		RCC_RESET_GPIOC();
 	}
 	else if (GPIO == GPIOD)
 	{
 		RCC_CLOCK_GPIOD_ENABLE();
+		RCC_RESET_GPIOD();
 	}
 	else if (GPIO == GPIOE)
 	{
 		RCC_CLOCK_GPIOE_ENABLE();
+		RCC_RESET_GPIOE();
 	}
 	else if (GPIO == GPIOH)
 	{
 		RCC_CLOCK_GPIOH_ENABLE();
+		RCC_RESET_GPIOH();
 	}
 
 	// this operation is unnecessary here because configuration library is taking
@@ -48,129 +53,167 @@ static void GPIO_ClockEnable(GPIO_TypeDef *GPIO)
 	// described in errata point 2.1.6
 	__DSB();
 }
+
 /*
- * Initialize GPIO pin
- *
- * @param[*hGPIO] - handler to GPIO structure that contains peripheral base
- * address and pin configuration
+ * Init basic gpio parameters -> enable clock , set mode and PUPD
+ * for standrad input mode this is enough
+ * @param[*p_GPIOx] - gpiox base address
+ * @param[pin] - pin number
+ * @param[mode] - input/output/af/analog
+ * @param[PUPD] - nopull/pullup/pulldown
  * @return - void
  */
-void GPIO_InitPin(GPIO_Handle_t *hGPIO)
+void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioMode_t mode, GpioPUPD_t PUPD)
 {
-	// enable clock
-	GPIO_ClockEnable(hGPIO->pGPIOx);
 
-	// mode selection
-	if (hGPIO->PinConfig.Mode < GPIO_PIN_MODE_EXTI_FT)
-	{
-		// non IRQ mode
-		hGPIO->pGPIOx->MODER &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-		hGPIO->pGPIOx->MODER |= hGPIO->PinConfig.Mode << (hGPIO->PinConfig.PinNumber * 2);
-	}
-	else
-	{
-		// IRQ mode
+	//mode
+	p_GPIOx->MODER &= ~(0x03U << (pin * 2));
+	p_GPIOx->MODER |= mode << (pin * 2);
 
-		// set as input
-		hGPIO->pGPIOx->MODER &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-		// interrupt mask
-		EXTI->IMR |= (0b1 << hGPIO->PinConfig.PinNumber);
+	//PUPD
+	p_GPIOx->PUPDR &= ~(0x03U << (pin * 2));
+	p_GPIOx->PUPDR |= (PUPD << (pin * 2));
 
-		// rising/falling trigger
-		if ((hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_FT) || (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_FTRT))
-		{
-			EXTI->FTSR |= (0b1 << hGPIO->PinConfig.PinNumber);
-		}
+	return;
 
-		if ((hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_RT) || (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_EXTI_FTRT))
-		{
-			EXTI->RTSR |= (0b1 << hGPIO->PinConfig.PinNumber);
-		}
-
-		// enable NVIC interrupt
-		if (hGPIO->PinConfig.PinNumber < GPIO_PIN_5)
-		{
-			// positions for EXTI interrupts in NVIC vector table are 6-10
-			NVIC->ISER[0] |= (0b1 << (hGPIO->PinConfig.PinNumber + 6));
-		}
-		else if (hGPIO->PinConfig.PinNumber < GPIO_PIN_10)
-		{
-			// position for EXTI9_5 is 23
-			NVIC->ISER[0] |= (0b1 << 23);
-		}
-		else
-		{
-			// position for EXTI15_10 is 40
-			NVIC->ISER[1] |= (0b1 << 8);
-		}
-
-		// set SYSCFG for external IRQ
-		// enable clock
-		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-		// get 4 bits code for certain port
-		uint8_t portcode = GPIO_BASEADDR_TO_CODE(hGPIO->pGPIOx);
-		// put it in syscfg register
-		SYSCFG->EXTICR[hGPIO->PinConfig.PinNumber / 4] |= (portcode << ((hGPIO->PinConfig.PinNumber % 4) * 4));
-	}
-
-	// set speed and output type for mode output or AF
-	if ((hGPIO->PinConfig.Mode == GPIO_PIN_MODE_OUTPUT) || (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_AF))
-	{
-		// speed selection
-		hGPIO->pGPIOx->OSPEEDR &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-		hGPIO->pGPIOx->OSPEEDR |= hGPIO->PinConfig.OutputSpeed << (hGPIO->PinConfig.PinNumber * 2);
-
-		// output type selection
-		hGPIO->pGPIOx->OTYPER &= ~(0b1 << (hGPIO->PinConfig.PinNumber));
-		hGPIO->pGPIOx->OTYPER |= hGPIO->PinConfig.OutputType << (hGPIO->PinConfig.PinNumber);
-	}
-
-	// set alternate function bits
-	if (hGPIO->PinConfig.Mode == GPIO_PIN_MODE_AF)
-	{
-		// clear 4 AF bits and set new value
-		hGPIO->pGPIOx->AFR[(hGPIO->PinConfig.PinNumber) / 8] &= ~(15UL << ((hGPIO->PinConfig.PinNumber % 8) * 4));
-		hGPIO->pGPIOx->AFR[(hGPIO->PinConfig.PinNumber) / 8] |= (hGPIO->PinConfig.AF << ((hGPIO->PinConfig.PinNumber % 8) * 4));
-	}
-
-	// pull ups pull downs
-	hGPIO->pGPIOx->PUPDR &= ~(0b11 << (hGPIO->PinConfig.PinNumber * 2));
-	hGPIO->pGPIOx->PUPDR |= (hGPIO->PinConfig.PullUpPullDown << (hGPIO->PinConfig.PinNumber * 2));
 }
 
 /*
- * Write GPIO pin
- *
- * @param[*GPIO] - base address of gpiox peripheral
- * @param[PinNumber] - GPIO_PIN_x @PinNumber
- * @param[PinState]- GPIO_PIN_RESET/GPIO_PIN_SET @GPIOPinState
+ * Init configuration for output pin
+ * @param[*p_GPIOx] - gpiox base address
+ * @param[pin] - pin number
+ * @param[output_type] - open drain/pushpull
+ * @param[speed] - slow/medium/fast/veryfast
  * @return - void
  */
-void GPIO_WritePin(GPIO_TypeDef *GPIO, uint8_t PinNumber, uint8_t PinState)
+void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioOutputType_t output_type, GpioSpeed_t speed)
 {
-	GPIO->ODR &= ~(0b1 << PinNumber);
-	GPIO->ODR |= PinState << PinNumber;
+
+	// speed selection
+	p_GPIOx->OSPEEDR &= ~(0x03U << (pin * 2));
+	p_GPIOx->OSPEEDR |= (speed << (pin * 2));
+
+	// output type selection
+	p_GPIOx->OTYPER &= ~(0x01U << pin);
+	p_GPIOx->OTYPER |= (output_type << pin);
+
+	return;
+}
+
+/*
+ * Init configuration for alternate function pin
+ * @param[*p_GPIOx] - gpiox base address
+ * @param[pin] - pin number
+ * @param[af] - alternate function number
+ * @return - void
+ */
+void GPIO_ConifgAF(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin, GpioAF_t af)
+{
+	// clear 4 AF bits and set new value
+	p_GPIOx->AFR[pin / 8] &= ~(15UL << ((pin % 8) * 4));
+	p_GPIOx->AFR[pin / 8] |= (af << ((pin % 8) * 4));
+
+	return;
+}
+
+/*
+ * Init configuration for exti pin
+ * @param[*p_GPIOx] - gpiox base address
+ * @param[pin] - pin number
+ * @param[trigger] - rising/falling/both
+ * @return - void
+ */
+void GPIO_ConfigEXTI(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		GpioEXTITrigger_t trigger)
+{
+	// set as input
+	p_GPIOx->MODER &= ~(0x3U << (pin * 2));
+	// interrupt mask
+	EXTI->IMR |= (0x1U << pin);
+
+	// rising/falling trigger
+	if ((trigger == kGpioFallingTrig) || (trigger == kGpioFallingRisingTrig))
+	{
+		EXTI->FTSR |= (0x01U << pin);
+	}
+
+	if ((trigger == kGpioRisingTrig) || (trigger == kGpioFallingRisingTrig))
+	{
+		EXTI->RTSR |= (0x01U << pin);
+	}
+
+	// enable NVIC interrupt
+	if (pin < kGpioPin5)
+	{
+		// positions for EXTI interrupts in NVIC vector table are 6-10
+		NVIC->ISER[0] |= (0x01U << (pin + 6));
+	}
+	else if (pin < kGpioPin10)
+	{
+		// position for EXTI9_5 is 23
+		NVIC_EnableIRQ(EXTI9_5_IRQn);
+	}
+	else
+	{
+		// position for EXTI15_10 is 40
+		NVIC_EnableIRQ(EXTI15_10_IRQn);
+	}
+
+	// set SYSCFG for external IRQ
+	// enable clock
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+	// get 4 bits code for certain port
+	uint8_t portcode = GPIO_BASEADDR_TO_CODE(p_GPIOx);
+	// put it in syscfg register
+	SYSCFG->EXTICR[pin / 4] |= (portcode << ((pin % 4) * 4));
+
+	return;
+}
+
+
+/*
+ * Write GPIO pin
+ * @param[*p_GPIOx] - base address of gpiox peripheral
+ * @param[pin] - pin number
+ * @param[pin_state]- GPIO_PIN_RESET/GPIO_PIN_SET
+ * @return - void
+ */
+void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, uint8_t pin, uint8_t pin_state)
+{
+	p_GPIOx->ODR &= ~(0x01U << pin);
+	p_GPIOx->ODR |= pin_state << pin;
+}
+
+/*
+ * Read GPIO pin
+ * @param[*p_GPIOx] - base address of gpiox peripheral
+ * @param[pin] - pin number
+ * @return - 0 or 1
+ */
+uint8_t GPIO_ReadPin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
+{
+	return ((p_GPIOx->IDR >> pin) & 0x01U);
 }
 
 /*
  * Toggle GPIO pin
- *
- * @param[*GPIO] - base address of gpiox peripheral
- * @param[PinNumber] - GPIO_PIN_x @PinNumber
+ * @param[*p_GPIOx] - base address of gpiox peripheral
+ * @param[pin] - pin number
  * @return - void
  */
-void GPIO_TogglePin(GPIO_TypeDef *GPIO, uint8_t PinNumber)
+void GPIO_TogglePin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
 {
-	GPIO->ODR ^= 0b1 << PinNumber;
+	p_GPIOx->ODR ^= 0x01U << pin;
 }
 
 /*
  * Clear pending flag
- *
  * @param[PinNumber] - GPIO_PIN_x @PinNumber
  * @return - void
  */
-void GPIO_ClearPendingEXTIFlag(uint8_t PinNumber)
+void GPIO_ClearPendingEXTIFlag(uint8_t pin)
 {
-	EXTI->PR |= (0b1 << PinNumber);
+	EXTI->PR |= (0b1 << pin);
 }
