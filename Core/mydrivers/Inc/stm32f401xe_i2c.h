@@ -86,9 +86,15 @@ typedef struct I2c_Handle_t
 #define I2C_CCR_FM_THIGH (I2C_CCR_FM_TR_SCL + I2C_CCR_FM_TW_SCLH)
 #define I2C_CCR_FM_TLOW (I2C_CCR_FM_TF_SCL + I2C_CCR_FM_TW_SCLL)
 
+// ******** FUNCTIONS ******** //
+
+// Init functions
+void I2C_InitClock(I2c_Handle_t *p_handle_i2c);
 void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed);
-uint8_t I2C_Transmit(I2c_Handle_t *p_hi2c, uint8_t slave_address,
-		uint8_t mem_address, uint8_t *p_data_buffer, uint32_t data_size);
-uint8_t I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+void I2C_InitGpioPins(I2c_Handle_t *p_handle_i2c);
+
+void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size);
+void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t *p_rx_data_buffer, uint32_t data_size);
 #endif /* MYDRIVERS_INC_STM32F401XE_I2C_H_ */

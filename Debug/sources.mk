@@ -23,5 +23,7 @@ SUBDIRS := \
 Core/Src \
 Core/Startup \
 Core/devices/Src \
+Core/examples/Inc \
+Core/examples/Src \
 Core/mydrivers/Src \
 

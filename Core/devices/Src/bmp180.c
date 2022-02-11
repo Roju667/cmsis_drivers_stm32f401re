@@ -11,12 +11,20 @@
 #include "stm32f401xe_i2c.h"
 
 
+static void bmp180_delay(uint32_t ms)
+{
+	for (uint32_t i = 0; i < ms; i++)
+	{
+
+	}
+}
 
 static void bmp180_i2c_read(I2c_Handle_t *p_i2c_handle, uint8_t slave_address,
 		uint8_t mem_address, uint8_t *p_rx_data_buffer, uint32_t data_size)
 {
 	// transmit address and register
 	I2C_Transmit(p_i2c_handle, slave_address, mem_address, 0, 0);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
 	// receive
 	I2C_Receive(p_i2c_handle, slave_address, p_rx_data_buffer, data_size);
 
@@ -33,13 +41,6 @@ static void bmp180_i2c_write(I2c_Handle_t *p_i2c_handle, uint8_t slave_address,
 	return;
 }
 
-static void bmp180_delay(uint32_t ms)
-{
-	for (uint32_t i = 0; i < ms; i++)
-	{
-
-	}
-}
 
 /*!
 * @brief:    - Read and check bmp chip ID.This value is fixed to 0x55,

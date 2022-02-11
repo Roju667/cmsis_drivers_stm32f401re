@@ -58,22 +58,29 @@ void GPIO_InitClock(GPIO_TypeDef *GPIO)
  * Init basic gpio parameters -> enable clock , set mode and PUPD
  * for standrad input mode this is enough
  * @param[*p_GPIOx] - gpiox base address
- * @param[pin] - pin number
+ * @param[pin_flags] - (GPIO_FLAG_PINx | GPIO_FLAG_PINy)
  * @param[mode] - input/output/af/analog
  * @param[PUPD] - nopull/pullup/pulldown
  * @return - void
  */
-void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 		GpioMode_t mode, GpioPUPD_t PUPD)
 {
 
-	//mode
-	p_GPIOx->MODER &= ~(0x03U << (pin * 2));
-	p_GPIOx->MODER |= mode << (pin * 2);
 
-	//PUPD
-	p_GPIOx->PUPDR &= ~(0x03U << (pin * 2));
-	p_GPIOx->PUPDR |= (PUPD << (pin * 2));
+	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	{
+		if(pin_flags >> pin_count & 1U)
+		{
+			//mode
+			p_GPIOx->MODER &= ~(0x03U << (pin_count * 2));
+			p_GPIOx->MODER |= mode << (pin_count * 2);
+
+			//PUPD
+			p_GPIOx->PUPDR &= ~(0x03U << (pin_count * 2));
+			p_GPIOx->PUPDR |= (PUPD << (pin_count * 2));
+		}
+	}
 
 	return;
 
@@ -82,39 +89,49 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
 /*
  * Init configuration for output pin
  * @param[*p_GPIOx] - gpiox base address
- * @param[pin] - pin number
+ * @param[pin_flags] - (GPIO_FLAG_PINx | GPIO_FLAG_PINy)
  * @param[output_type] - open drain/pushpull
  * @param[speed] - slow/medium/fast/veryfast
  * @return - void
  */
-void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 		GpioOutputType_t output_type, GpioSpeed_t speed)
 {
 
+	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	{
+		if(pin_flags >> pin_count & 1U)
+		{
 	// speed selection
-	p_GPIOx->OSPEEDR &= ~(0x03U << (pin * 2));
-	p_GPIOx->OSPEEDR |= (speed << (pin * 2));
+	p_GPIOx->OSPEEDR &= ~(0x03U << (pin_count * 2));
+	p_GPIOx->OSPEEDR |= (speed << (pin_count * 2));
 
 	// output type selection
-	p_GPIOx->OTYPER &= ~(0x01U << pin);
-	p_GPIOx->OTYPER |= (output_type << pin);
-
+	p_GPIOx->OTYPER &= ~(0x01U << pin_count);
+	p_GPIOx->OTYPER |= (output_type << pin_count);
+		}
+	}
 	return;
 }
 
 /*
  * Init configuration for alternate function pin
  * @param[*p_GPIOx] - gpiox base address
- * @param[pin] - pin number
+ * @param[pin_flags] - (GPIO_FLAG_PINx | GPIO_FLAG_PINy)
  * @param[af] - alternate function number
  * @return - void
  */
-void GPIO_ConifgAF(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin, GpioAF_t af)
+void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
 {
+	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	{
+		if(pin_flags >> pin_count & 1U)
+		{
 	// clear 4 AF bits and set new value
-	p_GPIOx->AFR[pin / 8] &= ~(15UL << ((pin % 8) * 4));
-	p_GPIOx->AFR[pin / 8] |= (af << ((pin % 8) * 4));
-
+	p_GPIOx->AFR[pin_count / 8] &= ~(15UL << ((pin_count) * 4));
+	p_GPIOx->AFR[pin_count / 8] |= (af << ((pin_count % 8) * 4));
+		}
+	}
 	return;
 }
 
@@ -180,7 +197,7 @@ void GPIO_ConfigEXTI(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
  * @param[pin_state]- GPIO_PIN_RESET/GPIO_PIN_SET
  * @return - void
  */
-void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, uint8_t pin, uint8_t pin_state)
+void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin, uint8_t pin_state)
 {
 	p_GPIOx->ODR &= ~(0x01U << pin);
 	p_GPIOx->ODR |= pin_state << pin;
@@ -192,7 +209,7 @@ void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, uint8_t pin, uint8_t pin_state)
  * @param[pin] - pin number
  * @return - 0 or 1
  */
-uint8_t GPIO_ReadPin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
+uint8_t GPIO_ReadPin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin)
 {
 	return ((p_GPIOx->IDR >> pin) & 0x01U);
 }
@@ -203,7 +220,7 @@ uint8_t GPIO_ReadPin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
  * @param[pin] - pin number
  * @return - void
  */
-void GPIO_TogglePin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
+void GPIO_TogglePin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin)
 {
 	p_GPIOx->ODR ^= 0x01U << pin;
 }
@@ -213,7 +230,7 @@ void GPIO_TogglePin(GPIO_TypeDef *p_GPIOx, uint8_t pin)
  * @param[PinNumber] - GPIO_PIN_x @PinNumber
  * @return - void
  */
-void GPIO_ClearPendingEXTIFlag(uint8_t pin)
+void GPIO_ClearPendingEXTIFlag(GpioPinNumber_t pin)
 {
 	EXTI->PR |= (0b1 << pin);
 }

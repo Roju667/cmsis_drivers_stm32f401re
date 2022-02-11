@@ -15,20 +15,25 @@
  * @param[*p_i2cx] - base address of i2c peripheral
  * @return - void
  */
-static void I2C_ClockEnable(I2C_TypeDef *p_i2cx)
+void I2C_InitClock(I2c_Handle_t *p_handle_i2c)
 {
-	if (p_i2cx == I2C1)
+	if (p_handle_i2c->p_i2cx == I2C1)
 	{
 		RCC_CLOCK_I2C1_ENABLE();
+		RCC_RESET_I2C1();
 	}
-	else if (p_i2cx == I2C2)
+	else if (p_handle_i2c->p_i2cx == I2C2)
 	{
 		RCC_CLOCK_I2C2_ENABLE();
+		RCC_RESET_I2C2();
 	}
-	else if (p_i2cx == I2C3)
+	else if (p_handle_i2c->p_i2cx == I2C3)
 	{
 		RCC_CLOCK_I2C3_ENABLE();
+		RCC_RESET_I2C3();
 	}
+
+	return;
 }
 
 /*
@@ -38,99 +43,19 @@ static void I2C_ClockEnable(I2C_TypeDef *p_i2cx)
  * @param[alternate_pos] - pins alternative positions select
  * @return - void
  */
-static void I2C_InitGpioPins(I2C_TypeDef *p_i2cx, uint8_t alternate_pos)
+void I2C_InitGpioPins(I2c_Handle_t *p_handle_i2c)
 {
-//	GPIO_Handle_t gpio_sda, gpio_scl;
-//
-//	if (p_i2cx == I2C1)
-//	{
-//		// PB6 SCL
-//		gpio_scl.pGPIOx = GPIOB;
-//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_6;
-//
-//		// PB7 SDA
-//		gpio_sda.pGPIOx = GPIOB;
-//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_7;
-//
-//		// Alternate Function
-//		gpio_scl.PinConfig.AF = kGpioAF4;
-//		gpio_sda.PinConfig.AF = kGpioAF4;
-//
-//		if (alternate_pos == 1)
-//		{
-//			// PB8 SCL
-//			gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
-//			// PB9 SDA
-//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
-//		}
-//	}
-//
-//	if (p_i2cx == I2C2)
-//	{
-//		// PB10 SCL
-//		gpio_scl.pGPIOx = GPIOB;
-//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_10;
-//
-//		// PB11 SDA
-//		gpio_sda.pGPIOx = GPIOB;
-//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_11;
-//
-//		// Alternate Function
-//		gpio_scl.PinConfig.AF = kGpioAF4;
-//		gpio_sda.PinConfig.AF = kGpioAF4;
-//
-//		if (alternate_pos == 1)
-//		{
-//			// PB3 SDA
-//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_3;
-//			gpio_sda.PinConfig.AF = kGpioAF9;
-//		}
-//	}
-//
-//	if (p_i2cx == I2C3)
-//	{
-//		// PA8 SCL
-//		gpio_scl.pGPIOx = GPIOA;
-//		gpio_scl.PinConfig.PinNumber = GPIO_PIN_8;
-//
-//		// PB9 SDA
-//		gpio_sda.pGPIOx = GPIOB;
-//		gpio_sda.PinConfig.PinNumber = GPIO_PIN_4;
-//
-//		// Alternate Function
-//		gpio_scl.PinConfig.AF = kGpioAF4;
-//		gpio_sda.PinConfig.AF = kGpioAF4;
-//
-//		if (alternate_pos == 1)
-//		{
-//			RCC_CLOCK_GPIOC_ENABLE();
-//			// PC9 SDA
-//			gpio_sda.pGPIOx = GPIOC;
-//			gpio_sda.PinConfig.PinNumber = GPIO_PIN_9;
-//
-//			// Alternate Function
-//			gpio_sda.PinConfig.AF = kGpioAF9;
-//		}
-//	}
-//
-//	// Mode AF
-//	gpio_scl.PinConfig.Mode = GPIO_PIN_MODE_AF;
-//	gpio_sda.PinConfig.Mode = GPIO_PIN_MODE_AF;
-//
-//	// Output type open drain
-//	gpio_scl.PinConfig.OutputType = GPIO_PIN_OT_OD;
-//	gpio_sda.PinConfig.OutputType = GPIO_PIN_OT_OD;
-//
-//	// Output speed very high
-//	gpio_scl.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-//	gpio_sda.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-//
-//	// Pull ups
-//	gpio_scl.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-//	gpio_sda.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-//
-//	GPIO_InitPin(&gpio_sda);
-//	GPIO_InitPin(&gpio_scl);
+
+	if (p_handle_i2c->p_i2cx == I2C1)
+	{
+		// PB6 SCL PB7 SDA
+		GPIO_ConfigBasic(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioModeAF, kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioOTOpenDrain, kGpioSpeedVeryHigh);
+		GPIO_ConfigAF(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioAF4);
+
+	}
+
+	return;
 }
 
 /*
@@ -197,11 +122,6 @@ static void I2C_CalculateCCRandTRISE(I2c_Handle_t *p_handle_i2c,
  */
 void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 {
-	// enable peripheral clock
-	I2C_ClockEnable(p_handle_i2c->p_i2cx);
-
-	// init GPIO pins
-	I2C_InitGpioPins(p_handle_i2c->p_i2cx, 1);
 
 	// reset I2C
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_SWRST;
@@ -243,9 +163,8 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 {
 	uint8_t temp_byte;
 	// 1.0 Set START BIT
-	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_START;
-
+	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	// 1.1 Wait until SB flag is set
 	while (!(I2C_SR1_SB & p_handle_i2c->p_i2cx->SR1))
 			break;;
@@ -268,14 +187,13 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  * @param[data_size] - amount of data to be send [in bytes]
  * @return - uint8_t - to return error
  */
-uint8_t I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
 {
 	uint32_t tx_data_to_send = data_size;
 	uint8_t temp_byte;
 
 	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_TRANSMITTER);
-
 	// wait until ADDR is set
 	while (!(I2C_SR1_ADDR & p_handle_i2c->p_i2cx->SR1))
 		;
@@ -315,15 +233,20 @@ uint8_t I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		}
 	}
 
-	return 0;
+	// in case of sending only mem address
+	while (!(p_handle_i2c->p_i2cx->SR1 & I2C_SR1_TXE))
+		;
+	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
+
+	return;
 }
 
-uint8_t I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t *p_rx_data_buffer, uint32_t data_size)
 {
 	uint32_t rx_data_to_get = data_size;
 	uint8_t temp_byte;
-	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
+
 	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_RECEIVER);
 
 	while (!(I2C_SR1_ADDR & p_handle_i2c->p_i2cx->SR1))
@@ -347,7 +270,7 @@ uint8_t I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 
 		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
 
-		return 0;
+		return;
 	}
 
 	// multiple bytes receive
@@ -385,5 +308,6 @@ uint8_t I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
 		rx_data_to_get--;
 	}
-	return 0;
+
+	return;
 }

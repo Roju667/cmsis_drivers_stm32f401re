@@ -80,7 +80,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.325208660.1123960934" name="gpio_exti_example.h" rcbsApplicability="disable" resourcePath="Core/examples/Inc/gpio_exti_example.h" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.325208660.707547230" name="i2c_bmp180_example.h" rcbsApplicability="disable" resourcePath="Core/examples/Inc/i2c_bmp180_example.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Core/examples/Inc/gpio_exti_example.h|Core/examples/Src/gpio_exti_example.c|Core/examples/Inc/gpio_example.h|Core/examples/Src/gpio_example.c|Core/examples/Src/i2c_bmp180_example.c|Core/examples/Inc/i2c_bmp180_example.h|Core/examples/Inc/wwdg_example.h|Core/examples/Src/wwdg_example.c|Core/examples/Inc/usart_dma_example.h|Core/examples/Src/usart_dma_example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Core/examples/Src/usart_dma_example.c|Core/examples/Inc/usart_dma_example.h|Core/examples/Inc/gpio_exti_example.h|Core/examples/Src/gpio_exti_example.c|Core/examples/Inc/gpio_example.h|Core/examples/Src/gpio_example.c|Core/examples/Inc/wwdg_example.h|Core/examples/Src/wwdg_example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

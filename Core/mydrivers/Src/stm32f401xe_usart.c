@@ -31,68 +31,58 @@
  */
 
 // ******** INIT FUNCTIONS ******** //
+
 /*
- * enable RCC Clock
+ * Init USART clock
+ * @param[*p_handle_usart] - handler to usart struct
+ * @return - void
  */
-static void USART_ClockEnable(USART_Handle_t *p_handle_usart)
+void USART_InitClock(USART_Handle_t *p_handle_usart)
 {
 	if (p_handle_usart->p_usartx == USART1)
 	{
 		RCC_CLOCK_USART1_ENABLE();
+		RCC_RESET_USART1();
 	}
 	else if (p_handle_usart->p_usartx == USART2)
 	{
 		RCC_CLOCK_USART2_ENABLE();
+		RCC_RESET_USART2();
 	}
 	else if (p_handle_usart->p_usartx == USART6)
 	{
 		RCC_CLOCK_USART6_ENABLE();
+		RCC_RESET_USART6();
 	}
+
+	return;
 }
 
 /*
- * init gpio pins
+ * Init GPIO pins for usart peripheral
+ * @param[*p_handle_usart] - handler to usart struct
+ * @return - void
  */
-static void USART_InitGpioPins(USART_Handle_t *p_handle_usart)
+void USART_InitGpioPins(USART_Handle_t *p_handle_usart)
 {
-//	GPIO_Handle_t gpio_rx, gpio_tx;
-//
-//	if (p_handle_usart->p_usartx == USART2)
-//	{
-//		// PB6 RX
-//		gpio_rx.pGPIOx = GPIOA;
-//		gpio_rx.PinConfig.PinNumber = GPIO_PIN_3;
-//
-//		// PB7 TX
-//		gpio_tx.pGPIOx = GPIOA;
-//		gpio_tx.PinConfig.PinNumber = GPIO_PIN_2;
-//
-//		// Alternate Function
-//		gpio_rx.PinConfig.AF = GPIO_PIN_AF_AF7;
-//		gpio_tx.PinConfig.AF = GPIO_PIN_AF_AF7;
-//	}
-//
-//	// Mode AF
-//	gpio_rx.PinConfig.Mode = GPIO_PIN_MODE_AF;
-//	gpio_tx.PinConfig.Mode = GPIO_PIN_MODE_AF;
-//
-//	// Output type open drain
-//	gpio_rx.PinConfig.OutputType = GPIO_PIN_OT_OD;
-//	gpio_tx.PinConfig.OutputType = GPIO_PIN_OT_OD;
-//
-//	// Output speed very high
-//	gpio_rx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-//	gpio_tx.PinConfig.OutputSpeed = GPIO_PIN_SPEED_VERYHIGH;
-//
-//	// Pull ups
-//	gpio_rx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-//	gpio_tx.PinConfig.PullUpPullDown = GPIO_PIN_PUPD_NOPULL;
-//
-//	GPIO_InitPin(&gpio_rx);
-//	GPIO_InitPin(&gpio_tx);
+
+	if(p_handle_usart->p_usartx == USART2)
+	{
+		// PA2 RX PA3 TX
+		GPIO_ConfigBasic(GPIOA, (GPIO_FLAG_PIN_3 | GPIO_FLAG_PIN_2), kGpioModeAF, kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOA, (GPIO_FLAG_PIN_3 | GPIO_FLAG_PIN_2), kGpioOTOpenDrain, kGpioSpeedVeryHigh);
+		GPIO_ConfigAF(GPIOA, (GPIO_FLAG_PIN_3 | GPIO_FLAG_PIN_2), kGpioAF7);
+
+	}
+
+	return;
 }
 /*
- * calculate and write in baud rate divider
+ * Calculate values for baud rate registers
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[baud_rate] - desired baud rate value
+ * @param[oversampling] - oversampling method 8/16
+ * @return - void
  */
 void USART_SetBaudRate(USART_Handle_t *p_handle_usart, uint32_t baud_rate,
 		UsartOversampling_t oversampling)
@@ -148,8 +138,14 @@ void USART_SetBaudRate(USART_Handle_t *p_handle_usart, uint32_t baud_rate,
 }
 
 /*
+ * Enable IRQ flags for USART peripheral
  * use CRx_IRQ_FLAGS to enable all the interrupts in register, otherwise use
  * like : (USART_CR1_PEIE | USART_CR1_TXEIE)
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[CR1_flags] - IRQ flags in CR1
+ * @param[CR2_flags] - IRQ flags in CR2
+ * @param[CR3_flags] - IRQ flags in CR3
+ * @return - void
  */
 void USART_EnableIRQs(USART_Handle_t *p_handle_usart, uint32_t CR1_flags,
 		uint32_t CR2_flags, uint32_t CR3_flags)
@@ -177,15 +173,17 @@ void USART_EnableIRQs(USART_Handle_t *p_handle_usart, uint32_t CR1_flags,
 }
 
 /*
- * basic init function
+ * Basic init function
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[word_lenght] - word lenghts 8-9 bits
+ * @param[stop_bits] - stop bits 1-2
+ * @param[parity] - parity odd/even/null
+ * @return - void
  */
 void USART_SetBasicParameters(USART_Handle_t *p_handle_usart,
 		UsartWordLenght_t word_lenght, UsartStopBits_t stop_bits,
 		UsartParity_t parity)
 {
-	USART_InitGpioPins(p_handle_usart);
-	USART_ClockEnable(p_handle_usart);
-
 	//	enable the USART by writing the UE bit in USART_CR1 register to 1.
 	p_handle_usart->p_usartx->CR1 |= USART_CR1_UE;
 	//	program the M bit in USART_CR1 to define the word length.
@@ -207,7 +205,11 @@ void USART_SetBasicParameters(USART_Handle_t *p_handle_usart,
 // ******** RECIEVE FUNCTIONS ******** //
 
 /*
- * blocking receive UART function
+ * Polling uart receive function
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[*p_data_buffer] - pointer to data buffer
+ * @param[data_lenght] - data size
+ * @return - void
  */
 void USART_Receive(USART_Handle_t *p_handle_usart, uint8_t *p_data_buffer,
 		uint32_t data_lenght)
@@ -253,10 +255,13 @@ void USART_Receive(USART_Handle_t *p_handle_usart, uint8_t *p_data_buffer,
 	}
 }
 
+
 /*
- * configuration that you have call only once for receive DMA function,
- * then you only have to call Start function, configure data_buffer1 to NULL,
- * in case of using double buffer then configure it with pointer
+ * Configuration DMA receive function (has to be called only once)
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[*p_data_buffer0] - pointer to data buffer
+ * @param[*p_data_buffer1] - NULL/pointer to second buffer
+ * @return - void
  */
 void USART_ConfigureReceiveDMA(USART_Handle_t *p_handle_usart,
 		uint8_t *p_data_buffer0, uint8_t *p_data_buffer1)
@@ -282,8 +287,10 @@ void USART_ConfigureReceiveDMA(USART_Handle_t *p_handle_usart,
 }
 
 /*
- * start DMA channel that wait to transfer from UART DR register to
- * destination
+ * Toggle DMA transfer
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[data_lenght] - after that many bytes irq is triggered
+ * @return - void
  */
 void USART_ReceiveDMAStart(USART_Handle_t *p_handle_usart, uint32_t data_lenght)
 {
@@ -308,9 +315,9 @@ void USART_ReceiveDMAStart(USART_Handle_t *p_handle_usart, uint32_t data_lenght)
 }
 
 /*
- * clear dma rx status to idle after finished dma transmission
- * if you would like to send data on uart sometimes by dma
- * and sometimes by polling - put this in DMAx_Irq handler
+ * Clear DMA status , it is required to use both polling and DMA in one program
+ * @param[*p_handle_usart] - handler to usart struct
+ * @return - void
  */
 void USART_DMAReceiveDoneCallback(USART_Handle_t *p_handle_usart)
 {
@@ -323,7 +330,11 @@ void USART_DMAReceiveDoneCallback(USART_Handle_t *p_handle_usart)
 // ******** TRANSMIT FUNCTIONS ******** //
 
 /*
- * Blocking transmit UART function
+ * Polling uart transfer function
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[*p_data_buffer] - pointer to data buffer
+ * @param[data_lenght] - number of bytes to send
+ * @return - void
  */
 void USART_Transmit(USART_Handle_t *p_handle_usart, uint8_t *p_data_buffer,
 		uint32_t data_lenght)
@@ -376,8 +387,11 @@ void USART_Transmit(USART_Handle_t *p_handle_usart, uint8_t *p_data_buffer,
 }
 
 /*
- * similar to configure ReceiveDMA, put NULL as p_data_buffer1 in
- * case of not using double buffer
+ * Configuration DMA transmit function (has to be called only once)
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[*p_data_buffer0] - pointer to data buffer
+ * @param[*p_data_buffer1] - NULL/pointer to second buffer
+ * @return - void
  */
 void USART_ConfigureTransmitDMA(USART_Handle_t *p_handle_usart,
 		uint8_t *p_data_buffer0, uint8_t *p_data_buffer1)
@@ -405,7 +419,10 @@ void USART_ConfigureTransmitDMA(USART_Handle_t *p_handle_usart,
 }
 
 /*
- * start DMA channel that transfers from memory to UART DR
+ * Toggle DMA transfer
+ * @param[*p_handle_usart] - handler to usart struct
+ * @param[data_lenght] - after that many bytes irq is triggered
+ * @return - void
  */
 void USART_TransmitDMAStart(USART_Handle_t *p_handle_usart,
 		uint32_t data_lenght)
@@ -430,9 +447,9 @@ void USART_TransmitDMAStart(USART_Handle_t *p_handle_usart,
 }
 
 /*
- * clear dma tx status to idle after finished dma transmission
- * if you would like to send data on uart sometimes by dma
- * and sometimes by polling - put this in DMAx_Irq handler
+ * Clear DMA status , it is required to use both polling and DMA in one program
+ * @param[*p_handle_usart] - handler to usart struct
+ * @return - void
  */
 void USART_DMATransmitDoneCallback(USART_Handle_t *p_handle_usart)
 {

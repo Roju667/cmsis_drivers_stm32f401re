@@ -5,6 +5,7 @@
 "./Core/Src/utilities.o"
 "./Core/Startup/startup_stm32f401retx.o"
 "./Core/devices/Src/bmp180.o"
+"./Core/examples/Src/i2c_bmp180_example.o"
 "./Core/mydrivers/Src/stm32f401xe_dma.o"
 "./Core/mydrivers/Src/stm32f401xe_gpio.o"
 "./Core/mydrivers/Src/stm32f401xe_i2c.o"

@@ -42,12 +42,12 @@ void GPIOConfig(void)
 {
 	// PA5 Led
 	GPIO_InitClock(GPIOA);
-	GPIO_ConfigBasic(GPIOA, kGpioPin5, kGpioModeOutput, kGpioPUPDNoPull);
-	GPIO_ConfigOutput(GPIOA, kGpioPin5, kGpioOTPushPull, kGpioSpeedHigh);
+	GPIO_ConfigBasic(GPIOA, GPIO_FLAG_PIN_5, kGpioModeOutput, kGpioPUPDNoPull);
+	GPIO_ConfigOutput(GPIOA, GPIO_FLAG_PIN_5, kGpioOTPushPull, kGpioSpeedHigh);
 
 	// PC13 Button
 	GPIO_InitClock(GPIOC);
-	GPIO_ConfigBasic(GPIOC, kGpioPin13, kGpioModeInput, kGpioPUPDNoPull);
+	GPIO_ConfigBasic(GPIOC, GPIO_FLAG_PIN_13, kGpioModeInput, kGpioPUPDNoPull);
 
 	return;
 }

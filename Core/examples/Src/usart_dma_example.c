@@ -46,7 +46,6 @@ void usart_dma_example(void)
 	USART2Config(&p_usart2);
 	DMA1Config(&p_dma1);
 
-	PrintResetSource(&p_usart2);
 	// enable DMA interrupts for read/send
 	NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 	NVIC_EnableIRQ(DMA1_Stream5_IRQn);
@@ -64,7 +63,7 @@ void usart_dma_example(void)
 		for (uint32_t i = 0; i < 100000; i++)
 		{
 		}
-		GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		GPIO_TogglePin(GPIOA, kGpioPin5);
 
 		if (SendBuffer1Flag == 1)
 		{
@@ -100,14 +99,10 @@ void usart_dma_example(void)
  */
 void GPIOConfig(void)
 {
-	GPIO_Handle_t GPIOx;
-	GPIOx.PinConfig.Mode = GPIO_PIN_MODE_OUTPUT;
-	GPIOx.PinConfig.PinNumber = GPIO_PIN_5;
-	GPIOx.PinConfig.OutputType = GPIO_PIN_OT_PP;
-	GPIOx.pGPIOx = GPIOA;
-
-	GPIO_InitPin(&GPIOx);
-
+	// PA5 Led
+	GPIO_InitClock(GPIOA);
+	GPIO_ConfigBasic(GPIOA, GPIO_FLAG_PIN_5, kGpioModeOutput, kGpioPUPDNoPull);
+	GPIO_ConfigOutput(GPIOA, GPIO_FLAG_PIN_5, kGpioOTPushPull, kGpioSpeedHigh);
 	return;
 }
 
@@ -123,10 +118,13 @@ void USART2Config(USART_Handle_t *p_usart2)
 	p_usart2->p_usartx = USART2;
 	p_usart2->usart_dma.p_dma_stream_tx = DMA1_Stream6;
 	p_usart2->usart_dma.p_dma_stream_rx = DMA1_Stream5;
+	USART_InitClock(p_usart2);
+	USART_InitGpioPins(p_usart2);
 	USART_SetBasicParameters(p_usart2, kUsartWordLenght8, kUsartStopBits0,
 			kUsartNoParity);
 	USART_SetBaudRate(p_usart2, 115200, kUsartOversampling16);
 	USART_EnableIRQs(p_usart2, USART_CR1_IDLEIE, 0, USART_CR3_EIE);
+	return;
 }
 
 /*

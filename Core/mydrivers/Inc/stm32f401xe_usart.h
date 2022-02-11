@@ -11,6 +11,7 @@
 #include "stm32f401xe.h"
 #include "stm32f401xe_dma.h"
 
+
 typedef enum UsartError_t
 {
 	kUsartNoError, kUsartErrorRx, kUsartErrorRxBusy, kUsartErrorTxBusy
@@ -97,6 +98,8 @@ void USART_ReceiveDMAStart(USART_Handle_t *p_handle_usart, uint32_t data_lenght)
 void USART_DMAReceiveDoneCallback(USART_Handle_t *p_handle_usart);
 
 // Init functions
+void USART_InitClock(USART_Handle_t *p_handle_usart);
+void USART_InitGpioPins(USART_Handle_t *p_handle_usart);
 void USART_SetBasicParameters(USART_Handle_t *p_handle_usart,
 		UsartWordLenght_t word_lenght, UsartStopBits_t stop_bits,
 		UsartParity_t parity);
