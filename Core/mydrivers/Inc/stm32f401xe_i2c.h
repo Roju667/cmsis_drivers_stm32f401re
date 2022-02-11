@@ -10,6 +10,11 @@
 
 #include "stm32f401xe.h"
 
+#define I2C1_SDA_PIN
+#define I2C1_SDA_PORT	GPIOB
+#define I2C1_SCL_PIN
+#define I2C1_SCL_PORT	GPIOB
+
 /*
  * @Speed  fPCLK1 must be at least 2 MHz to achieve Sm mode I?C frequencies. It
  * must be at least 4 MHz to achieve Fm mode I?C frequencies. It must be a

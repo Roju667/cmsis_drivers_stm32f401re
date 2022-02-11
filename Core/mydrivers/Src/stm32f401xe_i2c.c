@@ -10,6 +10,26 @@
 #include "stm32f401xe_rcc.h"
 
 /*
+ * Problem with I2C that SDA stays on low state after reset
+ * @param[*p_i2cx] - base address of i2c peripheral
+ * @return - void
+ */
+void I2C_CheckIfBusIsHanging(GPIO_TypeDef *p_GPIOx_SDA, GpioPinNumber_t pin_SDA,GPIO_TypeDef *p_GPIOx_SCL, GpioPinNumber_t pin_SCL)
+{
+	uint8_t count = 0;
+	while(!GPIO_ReadPin(p_GPIOx_SDA, pin_SDA))
+	{
+		GPIO_TogglePin(p_GPIOx_SCL, pin_SCL);
+
+		if(count++ == 100)
+		{
+			break;
+		}
+	}
+
+}
+
+/*
  * Start clock for I2C
  *
  * @param[*p_i2cx] - base address of i2c peripheral
