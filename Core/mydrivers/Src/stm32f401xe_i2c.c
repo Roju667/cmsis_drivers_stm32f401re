@@ -6,27 +6,51 @@
  */
 
 #include "stm32f401xe_i2c.h"
+
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_rcc.h"
 
 /*
  * Problem with I2C that SDA stays on low state after reset
+ * solution is to toggle scl line few times for slave to release the line
  * @param[*p_i2cx] - base address of i2c peripheral
  * @return - void
  */
-void I2C_CheckIfBusIsHanging(GPIO_TypeDef *p_GPIOx_SDA, GpioPinNumber_t pin_SDA,GPIO_TypeDef *p_GPIOx_SCL, GpioPinNumber_t pin_SCL)
+void I2C_CheckIfBusIsHanging(I2c_Handle_t *p_handle_i2c)
 {
-	uint8_t count = 0;
-	while(!GPIO_ReadPin(p_GPIOx_SDA, pin_SDA))
+	if (p_handle_i2c->p_i2cx == I2C1)
 	{
-		GPIO_TogglePin(p_GPIOx_SCL, pin_SCL);
-
-		if(count++ == 100)
+		GPIO_ConfigBasic(GPIOB, I2C1_SCL_PIN_FLAG, kGpioModeOutput,
+				kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, I2C1_SCL_PIN_FLAG, kGpioOTPushPull,
+				kGpioSpeedVeryHigh);
+		for (uint8_t i = 0; i < 10; i++)
 		{
-			break;
+			GPIO_TogglePin(I2C1_SCL_PORT, I2C1_SCL_PIN);
 		}
 	}
-
+	else if (p_handle_i2c->p_i2cx == I2C2)
+	{
+		GPIO_ConfigBasic(GPIOB, I2C2_SCL_PIN_FLAG, kGpioModeOutput,
+				kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, I2C2_SCL_PIN_FLAG, kGpioOTPushPull,
+				kGpioSpeedVeryHigh);
+		for (uint8_t i = 0; i < 10; i++)
+		{
+			GPIO_TogglePin(I2C2_SCL_PORT, I2C2_SCL_PIN);
+		}
+	}
+	else if (p_handle_i2c->p_i2cx == I2C3)
+	{
+		GPIO_ConfigBasic(GPIOB, I2C2_SCL_PIN_FLAG, kGpioModeOutput,
+				kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, I2C2_SCL_PIN_FLAG, kGpioOTPushPull,
+				kGpioSpeedVeryHigh);
+		for (uint8_t i = 0; i < 10; i++)
+		{
+			GPIO_TogglePin(I2C3_SCL_PORT, I2C3_SCL_PIN);
+		}
+	}
 }
 
 /*
@@ -58,6 +82,7 @@ void I2C_InitClock(I2c_Handle_t *p_handle_i2c)
 
 /*
  * init i2c peripheral gpio pins
+ * define correct pin numbers and ports in header!
  *
  * @param[*p_i2cx] - i2c address
  * @param[alternate_pos] - pins alternative positions select
@@ -65,14 +90,33 @@ void I2C_InitClock(I2c_Handle_t *p_handle_i2c)
  */
 void I2C_InitGpioPins(I2c_Handle_t *p_handle_i2c)
 {
+	I2C_CheckIfBusIsHanging(p_handle_i2c);
 
+	// configure pins
 	if (p_handle_i2c->p_i2cx == I2C1)
 	{
-		// PB6 SCL PB7 SDA
-		GPIO_ConfigBasic(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioModeAF, kGpioPUPDNoPull);
-		GPIO_ConfigOutput(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioOTOpenDrain, kGpioSpeedVeryHigh);
-		GPIO_ConfigAF(GPIOB, (GPIO_FLAG_PIN_6 | GPIO_FLAG_PIN_7), kGpioAF4);
-
+		GPIO_ConfigBasic(GPIOB, (I2C1_SDA_PIN_FLAG | I2C1_SCL_PIN_FLAG),
+				kGpioModeAF, kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, (I2C1_SDA_PIN_FLAG | I2C1_SCL_PIN_FLAG),
+				kGpioOTOpenDrain, kGpioSpeedVeryHigh);
+		GPIO_ConfigAF(GPIOB, (I2C1_SDA_PIN_FLAG | I2C1_SCL_PIN_FLAG), kGpioAF4);
+	}
+	else if (p_handle_i2c->p_i2cx == I2C2)
+	{
+		GPIO_ConfigBasic(GPIOB, (I2C2_SDA_PIN_FLAG | I2C2_SCL_PIN_FLAG),
+				kGpioModeAF, kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, (I2C2_SDA_PIN_FLAG | I2C2_SCL_PIN_FLAG),
+				kGpioOTOpenDrain, kGpioSpeedVeryHigh);
+		GPIO_ConfigAF(GPIOB, I2C2_SDA_PIN_FLAG, kGpioAF9);
+		GPIO_ConfigAF(GPIOB, I2C2_SCL_PIN_FLAG, kGpioAF4);
+	}
+	else if (p_handle_i2c->p_i2cx == I2C3)
+	{
+		GPIO_ConfigBasic(GPIOB, (I2C3_SDA_PIN_FLAG | I2C3_SCL_PIN_FLAG),
+				kGpioModeAF, kGpioPUPDNoPull);
+		GPIO_ConfigOutput(GPIOB, (I2C3_SDA_PIN_FLAG | I2C3_SCL_PIN_FLAG),
+				kGpioOTOpenDrain, kGpioSpeedVeryHigh);
+		GPIO_ConfigAF(GPIOB, (I2C3_SDA_PIN_FLAG | I2C3_SCL_PIN_FLAG), kGpioAF4);
 	}
 
 	return;
@@ -142,7 +186,6 @@ static void I2C_CalculateCCRandTRISE(I2c_Handle_t *p_handle_i2c,
  */
 void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 {
-
 	// reset I2C
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_SWRST;
 	p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_SWRST);
@@ -164,8 +207,11 @@ void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 
 	// enable I2c
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_PE;
-
 	p_handle_i2c->error = kI2cErrNoError;
+
+	// check if bus is not stuck
+	// I2C_CheckIfBusIsHanging(p_handle_i2c);
+
 	return;
 }
 
@@ -187,7 +233,7 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	// 1.1 Wait until SB flag is set
 	while (!(I2C_SR1_SB & p_handle_i2c->p_i2cx->SR1))
-			break;;
+		break;;
 	// 1.2 Clear SB by reading SR1
 	temp_byte = p_handle_i2c->p_i2cx->SR1;
 	// If transmitting set slave addres LSB to 0, receiver 1
@@ -294,7 +340,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	}
 
 	// multiple bytes receive
-	while (rx_data_to_get > 2)
+	while (rx_data_to_get >= 2)
 	{
 		// 4. ADDR is cleared by reading SR1 , Read SR2
 		temp_byte = p_handle_i2c->p_i2cx->SR1;
@@ -305,7 +351,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		{
 			while (!(I2C_SR1_RXNE & p_handle_i2c->p_i2cx->SR1))
 				;
-			p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
+			p_rx_data_buffer[data_size - rx_data_to_get] =
+					p_handle_i2c->p_i2cx->DR;
 			rx_data_to_get--;
 
 			// ack receive

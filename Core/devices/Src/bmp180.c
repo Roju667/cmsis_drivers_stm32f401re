@@ -19,27 +19,6 @@ static void bmp180_delay(uint32_t ms)
 	}
 }
 
-static void bmp180_i2c_read(I2c_Handle_t *p_i2c_handle, uint8_t slave_address,
-		uint8_t mem_address, uint8_t *p_rx_data_buffer, uint32_t data_size)
-{
-	// transmit address and register
-	I2C_Transmit(p_i2c_handle, slave_address, mem_address, 0, 0);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
-	// receive
-	I2C_Receive(p_i2c_handle, slave_address, p_rx_data_buffer, data_size);
-
-	return;
-}
-
-static void bmp180_i2c_write(I2c_Handle_t *p_i2c_handle, uint8_t slave_address,
-		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
-{
-	// transmit address, register and data
-	I2C_Transmit(p_i2c_handle, slave_address, mem_address, p_tx_data_buffer,
-			data_size);
-
-	return;
-}
 
 
 /*!
@@ -53,10 +32,13 @@ static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 	uint8_t out_buff = 0;
 	uint8_t ret_val = NO_ERR;
 
-	bmp180_i2c_read(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CHIP_ID_REG,
-			&out_buff,
-			1);
-			
+	// data read
+	// send slave address and memory address
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CHIP_ID_REG, 0, 0);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	// read data
+	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 1);
+
 	if (BMP_CHIP_ID_VAL != out_buff)
 	{
 		ret_val = CHIP_ID_INVALID_ERR;
@@ -107,8 +89,8 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
 
 	p_bmp->oss.ratio = ratio;
 	BMP_SET_I2CRW_REG (in_buff[1], BMP_CTRL_OSS_MASK(ratio));
-	bmp180_i2c_write(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, in_buff,
-			2);
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, in_buff, 2);
+
 }
 
 
@@ -126,10 +108,13 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 	uint8_t j = 1;
 	int16_t *calib_data = (int16_t*) &p_bmp->calib;
 
-	bmp180_i2c_read(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CALIB_ADDR,
-			out_buff,
+	// send slave address and memory address
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CALIB_ADDR, 0, 0);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	// read data
+	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff,
 			BMP_CALIB_DATA_SIZE);
-	
+
 	// Store read calib data to bmp_calib struct.
 	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j+2)
 	{
@@ -170,13 +155,15 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
 	uint8_t out_buff[2];
 
 	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_TEMP_CONV);
-	bmp180_i2c_write(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG,
-			out_buff,
+
+	// write conversion time
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
 	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
-	bmp180_i2c_read(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR,
-			out_buff,
-			2);
+	// send slave address and memory address
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 2);
 
 	return (out_buff[0] << BYTE_SHIFT) | out_buff[1];
 }
@@ -217,13 +204,15 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
 	long up = 0;
 
 	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_PRESS_CONV);
-	bmp180_i2c_write(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG,
-			out_buff,
+
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
-	bmp180_delay(p_bmp->oss.wait_time * 10000);
-	bmp180_i2c_read(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR,
-			out_buff,
-			3);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	// send slave address and memory address
+	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
+	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 3);
+
 
 	up = ((out_buff[0] << SHORT_SHIFT) + (out_buff[1] << BYTE_SHIFT)
 			+ out_buff[2]) >> (8 - p_bmp->oss.ratio);

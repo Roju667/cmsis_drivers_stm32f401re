@@ -47,6 +47,8 @@ void i2c_bmp180_example(void)
 		{
 		}
 		GPIO_TogglePin(GPIOA, kGpioPin5);
+		p_bmp180.uncomp.temp = bmp180_get_ut(&p_bmp180);
+		p_bmp180.data.temp = bmp180_get_temp(&p_bmp180);
 	}
 }
 
