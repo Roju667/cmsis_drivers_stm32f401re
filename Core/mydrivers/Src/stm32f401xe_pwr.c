@@ -15,7 +15,7 @@
  * @param[mode] - pvdo can be checked by user by polling or can SET IRQ from
  * EXTI line 16
  */
-void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
+void PWR_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
 {
 	// enable power regulator bit
 	PWR->CR |= PWR_CR_PVDE;
@@ -51,7 +51,7 @@ void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode)
  * @param[exit] - enter sleep now [kWFI/kWFE] or enter after exiting ISR
  * [kSleepOnExit]
  */
-void Pwr_EnterSleepMode(PwrExit_t exit)
+void PWR_EnterSleepMode(PwrExit_t exit)
 {
 	// deselect deep sleep mode
 	SCB->SCR &= ~(SCB_SCR_SLEEPDEEP_Msk);
@@ -79,7 +79,7 @@ void Pwr_EnterSleepMode(PwrExit_t exit)
  * [kSleepOnExit]
  * @param[stop_mode] - stop mode configuration described in RM PWR chapter
  */
-void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
+void PWR_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
 {
 	// select deep sleep mode
 	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
@@ -137,7 +137,7 @@ void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode)
  * [kSleepOnExit] RTC has to be configured (alarm/tamper/timestamp) - come back
  * here after RTC deepdive
  */
-void Pwr_EnterStandbyMode(PwrExit_t exit)
+void PWR_EnterStandbyMode(PwrExit_t exit)
 {
 	// enable wake up pin
 	PWR->CSR |= PWR_CSR_EWUP;
@@ -170,7 +170,7 @@ void Pwr_EnterStandbyMode(PwrExit_t exit)
  * @param[p_data_buffer] - data that we want to save in backup registers
  * @param[data_len] - maximum 20x uint32
  */
-void Pwr_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len)
+void PWR_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len)
 {
 	// error check
 	if (data_len > 20)

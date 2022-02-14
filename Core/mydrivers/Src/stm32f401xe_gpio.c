@@ -66,24 +66,21 @@ void GPIO_InitClock(GPIO_TypeDef *GPIO)
 void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 		GpioMode_t mode, GpioPUPD_t PUPD)
 {
-
-
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
 		{
-			//mode
+			// mode
 			p_GPIOx->MODER &= ~(0x03U << (pin_count * 2));
 			p_GPIOx->MODER |= mode << (pin_count * 2);
 
-			//PUPD
+			// PUPD
 			p_GPIOx->PUPDR &= ~(0x03U << (pin_count * 2));
 			p_GPIOx->PUPDR |= (PUPD << (pin_count * 2));
 		}
 	}
 
 	return;
-
 }
 
 /*
@@ -97,18 +94,17 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 		GpioOutputType_t output_type, GpioSpeed_t speed)
 {
-
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
 		{
-	// speed selection
-	p_GPIOx->OSPEEDR &= ~(0x03U << (pin_count * 2));
-	p_GPIOx->OSPEEDR |= (speed << (pin_count * 2));
+			// speed selection
+			p_GPIOx->OSPEEDR &= ~(0x03U << (pin_count * 2));
+			p_GPIOx->OSPEEDR |= (speed << (pin_count * 2));
 
-	// output type selection
-	p_GPIOx->OTYPER &= ~(0x01U << pin_count);
-	p_GPIOx->OTYPER |= (output_type << pin_count);
+			// output type selection
+			p_GPIOx->OTYPER &= ~(0x01U << pin_count);
+			p_GPIOx->OTYPER |= (output_type << pin_count);
 		}
 	}
 	return;
@@ -123,13 +119,13 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  */
 void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
 {
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
 		{
-	// clear 4 AF bits and set new value
-	p_GPIOx->AFR[pin_count / 8] &= ~(15UL << ((pin_count) * 4));
-	p_GPIOx->AFR[pin_count / 8] |= (af << ((pin_count % 8) * 4));
+			// clear 4 AF bits and set new value
+			p_GPIOx->AFR[pin_count / 8] &= ~(15UL << ((pin_count) * 4));
+			p_GPIOx->AFR[pin_count / 8] |= (af << ((pin_count % 8) * 4));
 		}
 	}
 	return;
@@ -189,7 +185,6 @@ void GPIO_ConfigEXTI(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
 	return;
 }
 
-
 /*
  * Write GPIO pin
  * @param[*p_GPIOx] - base address of gpiox peripheral
@@ -197,7 +192,8 @@ void GPIO_ConfigEXTI(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
  * @param[pin_state]- GPIO_PIN_RESET/GPIO_PIN_SET
  * @return - void
  */
-void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin, uint8_t pin_state)
+void GPIO_WritePin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin,
+		uint8_t pin_state)
 {
 	p_GPIOx->ODR &= ~(0x01U << pin);
 	p_GPIOx->ODR |= pin_state << pin;

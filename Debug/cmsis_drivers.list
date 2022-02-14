@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020068  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00006476  00000000  00000000  00020098  2**0
+ 12 .debug_info   00006479  00000000  00000000  00020098  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00001186  00000000  00000000  0002650e  2**0
+ 13 .debug_abbrev 000011c6  00000000  00000000  00026511  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 000002f8  00000000  00000000  00027698  2**3
+ 14 .debug_aranges 000002f8  00000000  00000000  000276d8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00000260  00000000  00000000  00027990  2**3
+ 15 .debug_ranges 00000260  00000000  00000000  000279d0  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0000eaea  00000000  00000000  00027bf0  2**0
+ 16 .debug_macro  0000ee33  00000000  00000000  00027c30  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00004035  00000000  00000000  000366da  2**0
+ 17 .debug_line   0000402f  00000000  00000000  00036a63  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000572a4  00000000  00000000  0003a70f  2**0
+ 18 .debug_str    000572cb  00000000  00000000  0003aa92  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  000919b3  2**0
+ 19 .comment      00000053  00000000  00000000  00091d5d  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00000e50  00000000  00000000  00091a08  2**2
+ 20 .debug_frame  00000e50  00000000  00000000  00091db0  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -908,49 +908,22 @@ Disassembly of section .text:
  8000b8e:	bf00      	nop
 
 08000b90 <main>:
-// #include "gpio_exti_example.h"
-// #include "gpio_example.h"
-//#include "usart_dma_example.h"
- #include "i2c_bmp180_example.h"
-int main(void)
-{
  8000b90:	b580      	push	{r7, lr}
  8000b92:	af00      	add	r7, sp, #0
-//	wwdg_example();
-//	gpio_exti_example();
-//	gpio_example();
-//	usart_dma_example();
-	i2c_bmp180_example();
  8000b94:	f000 fb54 	bl	8001240 <i2c_bmp180_example>
  8000b98:	2300      	movs	r3, #0
-}
  8000b9a:	4618      	mov	r0, r3
  8000b9c:	bd80      	pop	{r7, pc}
 	...
 
 08000ba0 <SystemInit>:
-  *         configuration.
-  * @param  None
-  * @retval None
-  */
-void SystemInit(void)
-{
  8000ba0:	b480      	push	{r7}
  8000ba2:	af00      	add	r7, sp, #0
-  /* FPU settings ------------------------------------------------------------*/
-  #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-    SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
  8000ba4:	4b06      	ldr	r3, [pc, #24]	; (8000bc0 <SystemInit+0x20>)
  8000ba6:	f8d3 3088 	ldr.w	r3, [r3, #136]	; 0x88
  8000baa:	4a05      	ldr	r2, [pc, #20]	; (8000bc0 <SystemInit+0x20>)
  8000bac:	f443 0370 	orr.w	r3, r3, #15728640	; 0xf00000
  8000bb0:	f8c2 3088 	str.w	r3, [r2, #136]	; 0x88
-
-  /* Configure the Vector Table location -------------------------------------*/
-#if defined(USER_VECT_TAB_ADDRESS)
-  SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
-#endif /* USER_VECT_TAB_ADDRESS */
-}
  8000bb4:	bf00      	nop
  8000bb6:	46bd      	mov	sp, r7
  8000bb8:	f85d 7b04 	ldr.w	r7, [sp], #4
@@ -959,110 +932,53 @@ void SystemInit(void)
  8000bc0:	e000ed00 	.word	0xe000ed00
 
 08000bc4 <Reset_Handler>:
-
-    .section  .text.Reset_Handler
-  .weak  Reset_Handler
-  .type  Reset_Handler, %function
-Reset_Handler:  
-  ldr   sp, =_estack    		 /* set stack pointer */
  8000bc4:	f8df d034 	ldr.w	sp, [pc, #52]	; 8000bfc <LoopFillZerobss+0x12>
-
-/* Copy the data segment initializers from flash to SRAM */  
-  ldr r0, =_sdata
  8000bc8:	480d      	ldr	r0, [pc, #52]	; (8000c00 <LoopFillZerobss+0x16>)
-  ldr r1, =_edata
  8000bca:	490e      	ldr	r1, [pc, #56]	; (8000c04 <LoopFillZerobss+0x1a>)
-  ldr r2, =_sidata
  8000bcc:	4a0e      	ldr	r2, [pc, #56]	; (8000c08 <LoopFillZerobss+0x1e>)
-  movs r3, #0
  8000bce:	2300      	movs	r3, #0
-  b LoopCopyDataInit
  8000bd0:	e002      	b.n	8000bd8 <LoopCopyDataInit>
 
 08000bd2 <CopyDataInit>:
-
-CopyDataInit:
-  ldr r4, [r2, r3]
  8000bd2:	58d4      	ldr	r4, [r2, r3]
-  str r4, [r0, r3]
  8000bd4:	50c4      	str	r4, [r0, r3]
-  adds r3, r3, #4
  8000bd6:	3304      	adds	r3, #4
 
 08000bd8 <LoopCopyDataInit>:
-
-LoopCopyDataInit:
-  adds r4, r0, r3
  8000bd8:	18c4      	adds	r4, r0, r3
-  cmp r4, r1
  8000bda:	428c      	cmp	r4, r1
-  bcc CopyDataInit
  8000bdc:	d3f9      	bcc.n	8000bd2 <CopyDataInit>
-  
-/* Zero fill the bss segment. */
-  ldr r2, =_sbss
  8000bde:	4a0b      	ldr	r2, [pc, #44]	; (8000c0c <LoopFillZerobss+0x22>)
-  ldr r4, =_ebss
  8000be0:	4c0b      	ldr	r4, [pc, #44]	; (8000c10 <LoopFillZerobss+0x26>)
-  movs r3, #0
  8000be2:	2300      	movs	r3, #0
-  b LoopFillZerobss
  8000be4:	e001      	b.n	8000bea <LoopFillZerobss>
 
 08000be6 <FillZerobss>:
-
-FillZerobss:
-  str  r3, [r2]
  8000be6:	6013      	str	r3, [r2, #0]
-  adds r2, r2, #4
  8000be8:	3204      	adds	r2, #4
 
 08000bea <LoopFillZerobss>:
-
-LoopFillZerobss:
-  cmp r2, r4
  8000bea:	42a2      	cmp	r2, r4
-  bcc FillZerobss
  8000bec:	d3fb      	bcc.n	8000be6 <FillZerobss>
-
-/* Call the clock system intitialization function.*/
-  bl  SystemInit   
  8000bee:	f7ff ffd7 	bl	8000ba0 <SystemInit>
-/* Call static constructors */
-    bl __libc_init_array
  8000bf2:	f001 fd47 	bl	8002684 <__libc_init_array>
-/* Call the application's entry point.*/
-  bl  main
  8000bf6:	f7ff ffcb 	bl	8000b90 <main>
-  bx  lr    
  8000bfa:	4770      	bx	lr
-  ldr   sp, =_estack    		 /* set stack pointer */
  8000bfc:	20018000 	.word	0x20018000
-  ldr r0, =_sdata
  8000c00:	20000000 	.word	0x20000000
-  ldr r1, =_edata
  8000c04:	20000068 	.word	0x20000068
-  ldr r2, =_sidata
  8000c08:	08003740 	.word	0x08003740
-  ldr r2, =_sbss
  8000c0c:	20000068 	.word	0x20000068
-  ldr r4, =_ebss
  8000c10:	200000e0 	.word	0x200000e0
 
 08000c14 <ADC_IRQHandler>:
- * @retval None       
-*/
-    .section  .text.Default_Handler,"ax",%progbits
-Default_Handler:
-Infinite_Loop:
-  b  Infinite_Loop
  8000c14:	e7fe      	b.n	8000c14 <ADC_IRQHandler>
 
 08000c16 <bmp180_read_chip_id>:
-*              and can be used to check whether communication is functioning.
-* @param[in] - NONE.
-* @return    - NO_ERR if chip_id is equal to 0x55, otherwise CHIP_ID_INVALID_ERR.
-*/
+ * @param[in] - NONE.
+ * @return    - NO_ERR if chip_id is equal to 0x55, otherwise
+ * CHIP_ID_INVALID_ERR.
+ */
 static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 {
  8000c16:	b580      	push	{r7, lr}
@@ -1115,10 +1031,10 @@ static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
  8000c5a:	bd80      	pop	{r7, pc}
 
 08000c5c <bmp180_set_oss>:
-* @param[in] - struct of type oss_t
-* @param[in] - enum of type oss_ratio_t
-* @return    - None
-*/
+ * @param[in] - struct of type oss_t
+ * @param[in] - enum of type oss_ratio_t
+ * @return    - None
+ */
 static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
 {
  8000c5c:	b580      	push	{r7, lr}
@@ -1127,9 +1043,10 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
  8000c62:	6078      	str	r0, [r7, #4]
  8000c64:	460b      	mov	r3, r1
  8000c66:	70fb      	strb	r3, [r7, #3]
-	uint8_t in_buff[2] = {0};
+	uint8_t in_buff[2] =
  8000c68:	2300      	movs	r3, #0
  8000c6a:	81bb      	strh	r3, [r7, #12]
+	{ 0 };
 
 	switch (ratio)
  8000c6c:	78fb      	ldrb	r3, [r7, #3]
@@ -1142,58 +1059,58 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
  8000c80:	08000c9d 	.word	0x08000c9d
  8000c84:	08000ca7 	.word	0x08000ca7
 	{
-		case ULTRA_LOW_PWR_MODE:
-		{
+	case ULTRA_LOW_PWR_MODE:
+	{
 		p_bmp->oss.wait_time = BMP_OSS0_CONV_TIME;
  8000c88:	687b      	ldr	r3, [r7, #4]
  8000c8a:	2205      	movs	r2, #5
  8000c8c:	f883 2039 	strb.w	r2, [r3, #57]	; 0x39
-			break;
+		break;
  8000c90:	e013      	b.n	8000cba <bmp180_set_oss+0x5e>
-		}
-		case STANDARD_MODE:
-		{
+	}
+	case STANDARD_MODE:
+	{
 		p_bmp->oss.wait_time = BMP_OSS1_CONV_TIME;
  8000c92:	687b      	ldr	r3, [r7, #4]
  8000c94:	2208      	movs	r2, #8
  8000c96:	f883 2039 	strb.w	r2, [r3, #57]	; 0x39
-			break;
+		break;
  8000c9a:	e00e      	b.n	8000cba <bmp180_set_oss+0x5e>
-		}
-		case HIGH:
-		{
+	}
+	case HIGH:
+	{
 		p_bmp->oss.wait_time = BMP_OSS2_CONV_TIME;
  8000c9c:	687b      	ldr	r3, [r7, #4]
  8000c9e:	220e      	movs	r2, #14
  8000ca0:	f883 2039 	strb.w	r2, [r3, #57]	; 0x39
-			break;
+		break;
  8000ca4:	e009      	b.n	8000cba <bmp180_set_oss+0x5e>
-		}
-		case ULTRA_HIGH_RESOLUTION:
-		{
+	}
+	case ULTRA_HIGH_RESOLUTION:
+	{
 		p_bmp->oss.wait_time = BMP_OSS3_CONV_TIME;
  8000ca6:	687b      	ldr	r3, [r7, #4]
  8000ca8:	221a      	movs	r2, #26
  8000caa:	f883 2039 	strb.w	r2, [r3, #57]	; 0x39
-			break;
+		break;
  8000cae:	e004      	b.n	8000cba <bmp180_set_oss+0x5e>
-		}
-		default:
-		{
+	}
+	default:
+	{
 		p_bmp->oss.wait_time = BMP_OSS1_CONV_TIME;
  8000cb0:	687b      	ldr	r3, [r7, #4]
  8000cb2:	2208      	movs	r2, #8
  8000cb4:	f883 2039 	strb.w	r2, [r3, #57]	; 0x39
-			break;
+		break;
  8000cb8:	bf00      	nop
-		}
+	}
 	}
 
 	p_bmp->oss.ratio = ratio;
  8000cba:	687b      	ldr	r3, [r7, #4]
  8000cbc:	78fa      	ldrb	r2, [r7, #3]
  8000cbe:	f883 2038 	strb.w	r2, [r3, #56]	; 0x38
-	BMP_SET_I2CRW_REG (in_buff[1], BMP_CTRL_OSS_MASK(ratio));
+	BMP_SET_I2CRW_REG(in_buff[1], BMP_CTRL_OSS_MASK(ratio));
  8000cc2:	78fb      	ldrb	r3, [r7, #3]
  8000cc4:	019b      	lsls	r3, r3, #6
  8000cc6:	70fb      	strb	r3, [r7, #3]
@@ -1208,7 +1125,6 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
  8000cd8:	22f4      	movs	r2, #244	; 0xf4
  8000cda:	21ee      	movs	r1, #238	; 0xee
  8000cdc:	f000 ff9a 	bl	8001c14 <I2C_Transmit>
-
 }
  8000ce0:	bf00      	nop
  8000ce2:	3710      	adds	r7, #16
@@ -1216,10 +1132,10 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
  8000ce6:	bd80      	pop	{r7, pc}
 
 08000ce8 <bmp180_read_calib_data>:
-*              This is used to compensate offset, temperature dependence and other parameters of the sensor.
-* @param[in] - struct of type bmp_calib_param_t
-* @return    - NO_ERR if read calibration data are valid otherwise READ_CALIB_ERR.
-*/
+ * @param[in] - struct of type bmp_calib_param_t
+ * @return    - NO_ERR if read calibration data are valid otherwise
+ * READ_CALIB_ERR.
+ */
 static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 {
  8000ce8:	b580      	push	{r7, lr}
@@ -1229,7 +1145,7 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 	bmp_err_t ret_val = NO_ERR;
  8000cf0:	2300      	movs	r3, #0
  8000cf2:	f887 3027 	strb.w	r3, [r7, #39]	; 0x27
-	uint8_t out_buff[BMP_CALIB_DATA_SIZE] = {0};
+	uint8_t out_buff[BMP_CALIB_DATA_SIZE] =
  8000cf6:	2300      	movs	r3, #0
  8000cf8:	60bb      	str	r3, [r7, #8]
  8000cfa:	f107 030c 	add.w	r3, r7, #12
@@ -1239,6 +1155,7 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
  8000d04:	609a      	str	r2, [r3, #8]
  8000d06:	60da      	str	r2, [r3, #12]
  8000d08:	821a      	strh	r2, [r3, #16]
+	{ 0 };
 	uint8_t i = 0;
  8000d0a:	2300      	movs	r3, #0
  8000d0c:	f887 3026 	strb.w	r3, [r7, #38]	; 0x26
@@ -1267,10 +1184,10 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
  8000d34:	2316      	movs	r3, #22
  8000d36:	21ef      	movs	r1, #239	; 0xef
  8000d38:	f001 f81f 	bl	8001d7a <I2C_Receive>
-			BMP_CALIB_DATA_SIZE);
+	BMP_CALIB_DATA_SIZE);
 
 	// Store read calib data to bmp_calib struct.
-	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j+2)
+	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j + 2)
  8000d3c:	2300      	movs	r3, #0
  8000d3e:	f887 3026 	strb.w	r3, [r7, #38]	; 0x26
  8000d42:	e03e      	b.n	8000dc2 <bmp180_read_calib_data+0xda>
@@ -1326,7 +1243,7 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 			ret_val = GET_CALIB_ERR;
  8000db2:	2302      	movs	r3, #2
  8000db4:	f887 3027 	strb.w	r3, [r7, #39]	; 0x27
-	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j+2)
+	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j + 2)
  8000db8:	f897 3026 	ldrb.w	r3, [r7, #38]	; 0x26
  8000dbc:	3301      	adds	r3, #1
  8000dbe:	f887 3026 	strb.w	r3, [r7, #38]	; 0x26
@@ -1345,10 +1262,10 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
  8000dd4:	bd80      	pop	{r7, pc}
 
 08000dd6 <bmp180_init>:
-* @brief:    - Performe initial sequence of BMP sensor
-* @param[in] - pointer to struct of type bmp_calib_param_t
-* @return    - None.
-*/
+ * @brief:    - Performe initial sequence of BMP sensor
+ * @param[in] - pointer to struct of type bmp_calib_param_t
+ * @return    - None.
+ */
 void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
 {
  8000dd6:	b590      	push	{r4, r7, lr}
@@ -1356,8 +1273,7 @@ void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
  8000dda:	af00      	add	r7, sp, #0
  8000ddc:	6078      	str	r0, [r7, #4]
  8000dde:	6039      	str	r1, [r7, #0]
-
-	memset(p_bmp, 0x00, sizeof(&p_bmp)); // clear bmp strut;
+	memset(p_bmp, 0x00, sizeof(&p_bmp));  // clear bmp strut;
  8000de0:	687b      	ldr	r3, [r7, #4]
  8000de2:	2204      	movs	r2, #4
  8000de4:	2100      	movs	r1, #0
@@ -1381,7 +1297,7 @@ void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
  8000e08:	f7ff ff6e 	bl	8000ce8 <bmp180_read_calib_data>
  8000e0c:	4603      	mov	r3, r0
  8000e0e:	f884 303a 	strb.w	r3, [r4, #58]	; 0x3a
-	bmp180_set_oss(p_bmp, ULTRA_HIGH_RESOLUTION);       // set oversampling settings
+	bmp180_set_oss(p_bmp, ULTRA_HIGH_RESOLUTION);  // set oversampling settings
  8000e12:	687b      	ldr	r3, [r7, #4]
  8000e14:	2103      	movs	r1, #3
  8000e16:	4618      	mov	r0, r3
@@ -1393,10 +1309,10 @@ void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
  8000e22:	bd90      	pop	{r4, r7, pc}
 
 08000e24 <bmp180_get_ut>:
-* @brief:    - Get uncompensated temperature value. UT = temperature data (16 bit)
-* @param[in] - None.
-* @return    - uncompensated temp.
-*/
+ * bit)
+ * @param[in] - None.
+ * @return    - uncompensated temp.
+ */
 int32_t bmp180_get_ut(bmp180_t *p_bmp)
 {
  8000e24:	b580      	push	{r7, lr}
@@ -1405,7 +1321,7 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
  8000e2a:	6078      	str	r0, [r7, #4]
 	uint8_t out_buff[2];
 
-	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_TEMP_CONV);
+	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_TEMP_CONV);
  8000e2c:	232e      	movs	r3, #46	; 0x2e
  8000e2e:	733b      	strb	r3, [r7, #12]
 
@@ -1456,10 +1372,10 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
 	...
 
 08000e84 <bmp180_get_temp>:
-* @brief:    - Calc true temperature.
-* @param[in] - pointer to struct of type bmp_t
-* @return    - true temp.
-*/
+ * @brief:    - Calc true temperature.
+ * @param[in] - pointer to struct of type bmp_t
+ * @return    - true temp.
+ */
 float bmp180_get_temp(bmp180_t *p_bmp)
 {
  8000e84:	b480      	push	{r7}
@@ -1551,27 +1467,28 @@ float bmp180_get_temp(bmp180_t *p_bmp)
  8000f44:	42aa0000 	.word	0x42aa0000
 
 08000f48 <bmp180_get_up>:
-* @brief:    - Get uncompensated pressure value. UP = pressure data (16 to 19 bit)
-* @param[in] - struct of type oss_t
-* @return    - uncompensated pressure.
-*/
+ * bit)
+ * @param[in] - struct of type oss_t
+ * @return    - uncompensated pressure.
+ */
 int32_t bmp180_get_up(bmp180_t *p_bmp)
 {
  8000f48:	b580      	push	{r7, lr}
  8000f4a:	b086      	sub	sp, #24
  8000f4c:	af02      	add	r7, sp, #8
  8000f4e:	6078      	str	r0, [r7, #4]
-	uint8_t out_buff[3] = {0};
+	uint8_t out_buff[3] =
  8000f50:	4b1e      	ldr	r3, [pc, #120]	; (8000fcc <bmp180_get_up+0x84>)
  8000f52:	881b      	ldrh	r3, [r3, #0]
  8000f54:	813b      	strh	r3, [r7, #8]
  8000f56:	2300      	movs	r3, #0
  8000f58:	72bb      	strb	r3, [r7, #10]
+	{ 0 };
 	long up = 0;
  8000f5a:	2300      	movs	r3, #0
  8000f5c:	60fb      	str	r3, [r7, #12]
 
-	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_PRESS_CONV);
+	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_PRESS_CONV);
  8000f5e:	2334      	movs	r3, #52	; 0x34
  8000f60:	723b      	strb	r3, [r7, #8]
 
@@ -1608,7 +1525,6 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
  8000f9e:	21ef      	movs	r1, #239	; 0xef
  8000fa0:	f000 feeb 	bl	8001d7a <I2C_Receive>
 
-
 	up = ((out_buff[0] << SHORT_SHIFT) + (out_buff[1] << BYTE_SHIFT)
  8000fa4:	7a3b      	ldrb	r3, [r7, #8]
  8000fa6:	041a      	lsls	r2, r3, #16
@@ -1634,10 +1550,10 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
  8000fcc:	080036f0 	.word	0x080036f0
 
 08000fd0 <bmp180_get_pressure>:
-* @brief:    - Calc true pressure.
+ * @brief:    - Calc true pressure.
  * @param[in] - struct of type bmp180_t
-* @return    - true pressure in Pa.
-*/
+ * @return    - true pressure in Pa.
+ */
 int32_t bmp180_get_pressure(bmp180_t *p_bmp)
 {
  8000fd0:	b480      	push	{r7}
@@ -1850,10 +1766,10 @@ int32_t bmp180_get_pressure(bmp180_t *p_bmp)
  8001174:	00000000 	.word	0x00000000
 
 08001178 <bmp180_get_altitude>:
-* @brief:    - Calc true altitude.
+ * @brief:    - Calc true altitude.
  * @param[in] - struct of type bmp180_t
-* @return    - true pressure.
-*/
+ * @return    - true pressure.
+ */
 float bmp180_get_altitude(bmp180_t *p_bmp)
 {
  8001178:	b580      	push	{r7, lr}
@@ -1902,12 +1818,13 @@ float bmp180_get_altitude(bmp180_t *p_bmp)
  80011e0:	60fb      	str	r3, [r7, #12]
 							(1 / 5.255)));
 
-	if ((altitude <= BMP_MIN_ALT_THRESHOLD) || (altitude >= BMP_MAX_ALT_THRESHOLD))
+	if ((altitude <= BMP_MIN_ALT_THRESHOLD)
  80011e2:	edd7 7a03 	vldr	s15, [r7, #12]
  80011e6:	ed9f 7a14 	vldr	s14, [pc, #80]	; 8001238 <bmp180_get_altitude+0xc0>
  80011ea:	eef4 7ac7 	vcmpe.f32	s15, s14
  80011ee:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
  80011f2:	d908      	bls.n	8001206 <bmp180_get_altitude+0x8e>
+			|| (altitude >= BMP_MAX_ALT_THRESHOLD))
  80011f4:	edd7 7a03 	vldr	s15, [r7, #12]
  80011f8:	ed9f 7a10 	vldr	s14, [pc, #64]	; 800123c <bmp180_get_altitude+0xc4>
  80011fc:	eef4 7ac7 	vcmpe.f32	s15, s14
@@ -2371,14 +2288,12 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  8001528:	707b      	strb	r3, [r7, #1]
  800152a:	4613      	mov	r3, r2
  800152c:	703b      	strb	r3, [r7, #0]
-
-
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  800152e:	2300      	movs	r3, #0
  8001530:	81fb      	strh	r3, [r7, #14]
  8001532:	e034      	b.n	800159e <GPIO_ConfigBasic+0x8a>
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
  8001534:	887a      	ldrh	r2, [r7, #2]
  8001536:	89fb      	ldrh	r3, [r7, #14]
  8001538:	fa42 f303 	asr.w	r3, r2, r3
@@ -2386,7 +2301,7 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  8001540:	2b00      	cmp	r3, #0
  8001542:	d029      	beq.n	8001598 <GPIO_ConfigBasic+0x84>
 		{
-			//mode
+			// mode
 			p_GPIOx->MODER &= ~(0x03U << (pin_count * 2));
  8001544:	687b      	ldr	r3, [r7, #4]
  8001546:	681a      	ldr	r2, [r3, #0]
@@ -2409,7 +2324,7 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  800156a:	687b      	ldr	r3, [r7, #4]
  800156c:	601a      	str	r2, [r3, #0]
 
-			//PUPD
+			// PUPD
 			p_GPIOx->PUPDR &= ~(0x03U << (pin_count * 2));
  800156e:	687b      	ldr	r3, [r7, #4]
  8001570:	68da      	ldr	r2, [r3, #12]
@@ -2431,7 +2346,7 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  8001592:	431a      	orrs	r2, r3
  8001594:	687b      	ldr	r3, [r7, #4]
  8001596:	60da      	str	r2, [r3, #12]
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  8001598:	89fb      	ldrh	r3, [r7, #14]
  800159a:	3301      	adds	r3, #1
  800159c:	81fb      	strh	r3, [r7, #14]
@@ -2443,7 +2358,6 @@ void GPIO_ConfigBasic(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
 
 	return;
  80015a4:	bf00      	nop
-
 }
  80015a6:	3714      	adds	r7, #20
  80015a8:	46bd      	mov	sp, r7
@@ -2470,13 +2384,12 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  80015c4:	707b      	strb	r3, [r7, #1]
  80015c6:	4613      	mov	r3, r2
  80015c8:	703b      	strb	r3, [r7, #0]
-
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  80015ca:	2300      	movs	r3, #0
  80015cc:	81fb      	strh	r3, [r7, #14]
  80015ce:	e032      	b.n	8001636 <GPIO_ConfigOutput+0x86>
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
  80015d0:	887a      	ldrh	r2, [r7, #2]
  80015d2:	89fb      	ldrh	r3, [r7, #14]
  80015d4:	fa42 f303 	asr.w	r3, r2, r3
@@ -2484,8 +2397,8 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  80015dc:	2b00      	cmp	r3, #0
  80015de:	d027      	beq.n	8001630 <GPIO_ConfigOutput+0x80>
 		{
-	// speed selection
-	p_GPIOx->OSPEEDR &= ~(0x03U << (pin_count * 2));
+			// speed selection
+			p_GPIOx->OSPEEDR &= ~(0x03U << (pin_count * 2));
  80015e0:	687b      	ldr	r3, [r7, #4]
  80015e2:	689a      	ldr	r2, [r3, #8]
  80015e4:	89fb      	ldrh	r3, [r7, #14]
@@ -2496,7 +2409,7 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  80015f0:	401a      	ands	r2, r3
  80015f2:	687b      	ldr	r3, [r7, #4]
  80015f4:	609a      	str	r2, [r3, #8]
-	p_GPIOx->OSPEEDR |= (speed << (pin_count * 2));
+			p_GPIOx->OSPEEDR |= (speed << (pin_count * 2));
  80015f6:	687b      	ldr	r3, [r7, #4]
  80015f8:	689b      	ldr	r3, [r3, #8]
  80015fa:	7839      	ldrb	r1, [r7, #0]
@@ -2507,8 +2420,8 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  8001606:	687b      	ldr	r3, [r7, #4]
  8001608:	609a      	str	r2, [r3, #8]
 
-	// output type selection
-	p_GPIOx->OTYPER &= ~(0x01U << pin_count);
+			// output type selection
+			p_GPIOx->OTYPER &= ~(0x01U << pin_count);
  800160a:	687b      	ldr	r3, [r7, #4]
  800160c:	685a      	ldr	r2, [r3, #4]
  800160e:	89fb      	ldrh	r3, [r7, #14]
@@ -2518,7 +2431,7 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  8001618:	401a      	ands	r2, r3
  800161a:	687b      	ldr	r3, [r7, #4]
  800161c:	605a      	str	r2, [r3, #4]
-	p_GPIOx->OTYPER |= (output_type << pin_count);
+			p_GPIOx->OTYPER |= (output_type << pin_count);
  800161e:	687b      	ldr	r3, [r7, #4]
  8001620:	685b      	ldr	r3, [r3, #4]
  8001622:	7879      	ldrb	r1, [r7, #1]
@@ -2527,7 +2440,7 @@ void GPIO_ConfigOutput(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags,
  800162a:	431a      	orrs	r2, r3
  800162c:	687b      	ldr	r3, [r7, #4]
  800162e:	605a      	str	r2, [r3, #4]
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  8001630:	89fb      	ldrh	r3, [r7, #14]
  8001632:	3301      	adds	r3, #1
  8001634:	81fb      	strh	r3, [r7, #14]
@@ -2559,12 +2472,12 @@ void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
  8001652:	807b      	strh	r3, [r7, #2]
  8001654:	4613      	mov	r3, r2
  8001656:	707b      	strb	r3, [r7, #1]
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  8001658:	2300      	movs	r3, #0
  800165a:	81fb      	strh	r3, [r7, #14]
  800165c:	e035      	b.n	80016ca <GPIO_ConfigAF+0x82>
 	{
-		if(pin_flags >> pin_count & 1U)
+		if (pin_flags >> pin_count & 1U)
  800165e:	887a      	ldrh	r2, [r7, #2]
  8001660:	89fb      	ldrh	r3, [r7, #14]
  8001662:	fa42 f303 	asr.w	r3, r2, r3
@@ -2572,8 +2485,8 @@ void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
  800166a:	2b00      	cmp	r3, #0
  800166c:	d02a      	beq.n	80016c4 <GPIO_ConfigAF+0x7c>
 		{
-	// clear 4 AF bits and set new value
-	p_GPIOx->AFR[pin_count / 8] &= ~(15UL << ((pin_count) * 4));
+			// clear 4 AF bits and set new value
+			p_GPIOx->AFR[pin_count / 8] &= ~(15UL << ((pin_count) * 4));
  800166e:	89fb      	ldrh	r3, [r7, #14]
  8001670:	08db      	lsrs	r3, r3, #3
  8001672:	b298      	uxth	r0, r3
@@ -2590,7 +2503,7 @@ void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
  800168e:	687b      	ldr	r3, [r7, #4]
  8001690:	f100 0208 	add.w	r2, r0, #8
  8001694:	f843 1022 	str.w	r1, [r3, r2, lsl #2]
-	p_GPIOx->AFR[pin_count / 8] |= (af << ((pin_count % 8) * 4));
+			p_GPIOx->AFR[pin_count / 8] |= (af << ((pin_count % 8) * 4));
  8001698:	89fb      	ldrh	r3, [r7, #14]
  800169a:	08db      	lsrs	r3, r3, #3
  800169c:	b298      	uxth	r0, r3
@@ -2609,7 +2522,7 @@ void GPIO_ConfigAF(GPIO_TypeDef *p_GPIOx, uint16_t pin_flags, GpioAF_t af)
  80016bc:	687b      	ldr	r3, [r7, #4]
  80016be:	3208      	adds	r2, #8
  80016c0:	f843 1022 	str.w	r1, [r3, r2, lsl #2]
-	for(uint16_t pin_count = 0 ; pin_count<16; pin_count++)
+	for (uint16_t pin_count = 0; pin_count < 16; pin_count++)
  80016c4:	89fb      	ldrh	r3, [r7, #14]
  80016c6:	3301      	adds	r3, #1
  80016c8:	81fb      	strh	r3, [r7, #14]
@@ -2656,11 +2569,11 @@ void GPIO_TogglePin(GPIO_TypeDef *p_GPIOx, GpioPinNumber_t pin)
  8001704:	4770      	bx	lr
 
 08001706 <I2C_WaitForFlagUntilTimeout>:
- * @param[flag] - status flag
  * @param[timeout[ - timeout in miliseconds until re
  * @return - void
  */
-static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,uint32_t flag,uint32_t timeout)
+static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,
+		uint32_t flag, uint32_t timeout)
 {
  8001706:	b580      	push	{r7, lr}
  8001708:	b086      	sub	sp, #24
@@ -2676,7 +2589,7 @@ static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,uint32_
  8001718:	e009      	b.n	800172e <I2C_WaitForFlagUntilTimeout+0x28>
 	{
 		{
-			if(SYSTICK_GetTick() - start_time > timeout)
+			if (SYSTICK_GetTick() - start_time > timeout)
  800171a:	f000 fdd5 	bl	80022c8 <SYSTICK_GetTick>
  800171e:	4602      	mov	r2, r0
  8001720:	697b      	ldr	r3, [r7, #20]
@@ -2684,9 +2597,9 @@ static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,uint32_
  8001724:	687a      	ldr	r2, [r7, #4]
  8001726:	429a      	cmp	r2, r3
  8001728:	d201      	bcs.n	800172e <I2C_WaitForFlagUntilTimeout+0x28>
-					{
-						// return error status
-						return 1;
+			{
+				// return error status
+				return 1;
  800172a:	2301      	movs	r3, #1
  800172c:	e006      	b.n	800173c <I2C_WaitForFlagUntilTimeout+0x36>
 	while (!(flag & *(status_reg)))
@@ -2696,7 +2609,7 @@ static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,uint32_
  8001734:	4013      	ands	r3, r2
  8001736:	2b00      	cmp	r3, #0
  8001738:	d0ef      	beq.n	800171a <I2C_WaitForFlagUntilTimeout+0x14>
-					}
+			}
 		}
 	}
 	// return no error
@@ -2880,7 +2793,7 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  800185a:	601a      	str	r2, [r3, #0]
 	// 1.1 Wait until SB flag is set
 
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_SB, I2C_TIMEOUT) == 1)
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_SB,
  800185c:	687b      	ldr	r3, [r7, #4]
  800185e:	681b      	ldr	r3, [r3, #0]
  8001860:	3314      	adds	r3, #20
@@ -2891,6 +2804,7 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  800186e:	4603      	mov	r3, r0
  8001870:	2b01      	cmp	r3, #1
  8001872:	d102      	bne.n	800187a <I2C_SendAddress+0x4e>
+	I2C_TIMEOUT) == 1)
 	{
 		p_handle_i2c->error = kI2cErrTimeoutSB;
  8001874:	687b      	ldr	r3, [r7, #4]
@@ -3469,7 +3383,6 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001c28:	617b      	str	r3, [r7, #20]
 	uint8_t temp_byte;
 
-
 	p_handle_i2c->status = kI2cStatusTxPolling;
  8001c2a:	68fb      	ldr	r3, [r7, #12]
  8001c2c:	2202      	movs	r2, #2
@@ -3482,7 +3395,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001c36:	68f8      	ldr	r0, [r7, #12]
  8001c38:	f7ff fdf8 	bl	800182c <I2C_SendAddress>
 	// wait until ADDR is set
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR,
  8001c3c:	68fb      	ldr	r3, [r7, #12]
  8001c3e:	681b      	ldr	r3, [r3, #0]
  8001c40:	3314      	adds	r3, #20
@@ -3493,6 +3406,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001c4e:	4603      	mov	r3, r0
  8001c50:	2b00      	cmp	r3, #0
  8001c52:	d006      	beq.n	8001c62 <I2C_Transmit+0x4e>
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutADDR;
  8001c54:	68fb      	ldr	r3, [r7, #12]
@@ -3519,7 +3433,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001c70:	74fb      	strb	r3, [r7, #19]
 
 	// 5. TxE bit is set when acknowledge bit is sent;
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE,
  8001c72:	68fb      	ldr	r3, [r7, #12]
  8001c74:	681b      	ldr	r3, [r3, #0]
  8001c76:	3314      	adds	r3, #20
@@ -3530,6 +3444,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001c84:	4603      	mov	r3, r0
  8001c86:	2b00      	cmp	r3, #0
  8001c88:	d006      	beq.n	8001c98 <I2C_Transmit+0x84>
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutTXE;
  8001c8a:	68fb      	ldr	r3, [r7, #12]
@@ -3555,7 +3470,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001ca0:	e043      	b.n	8001d2a <I2C_Transmit+0x116>
 	{
 		// wait until data register is empty
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001ca2:	68fb      	ldr	r3, [r7, #12]
  8001ca4:	681b      	ldr	r3, [r3, #0]
  8001ca6:	3314      	adds	r3, #20
@@ -3566,6 +3481,8 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001cb4:	4603      	mov	r3, r0
  8001cb6:	2b00      	cmp	r3, #0
  8001cb8:	d006      	beq.n	8001cc8 <I2C_Transmit+0xb4>
+				I2C_SR1_TXE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutTXE;
  8001cba:	68fb      	ldr	r3, [r7, #12]
@@ -3578,7 +3495,6 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 			return;
  8001cc6:	e055      	b.n	8001d74 <I2C_Transmit+0x160>
 		}
-
 
 		// put data in data register
 		p_handle_i2c->p_i2cx->DR =
@@ -3608,7 +3524,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001ce4:	d121      	bne.n	8001d2a <I2C_Transmit+0x116>
 		{
 			// check if data transfer is finsihed
-			if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_BTF, I2C_TIMEOUT))
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001ce6:	68fb      	ldr	r3, [r7, #12]
  8001ce8:	681b      	ldr	r3, [r3, #0]
  8001cea:	3314      	adds	r3, #20
@@ -3619,6 +3535,8 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001cf8:	4603      	mov	r3, r0
  8001cfa:	2b00      	cmp	r3, #0
  8001cfc:	d006      	beq.n	8001d0c <I2C_Transmit+0xf8>
+					I2C_SR1_BTF,
+					I2C_TIMEOUT))
 			{
 				p_handle_i2c->error = kI2cErrTimeoutBTF;
  8001cfe:	68fb      	ldr	r3, [r7, #12]
@@ -3659,7 +3577,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	}
 
 	// in case of sending only mem address
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE,
  8001d30:	68fb      	ldr	r3, [r7, #12]
  8001d32:	681b      	ldr	r3, [r3, #0]
  8001d34:	3314      	adds	r3, #20
@@ -3670,6 +3588,7 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001d42:	4603      	mov	r3, r0
  8001d44:	2b00      	cmp	r3, #0
  8001d46:	d006      	beq.n	8001d56 <I2C_Transmit+0x142>
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutTXE;
  8001d48:	68fb      	ldr	r3, [r7, #12]
@@ -3733,7 +3652,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001d94:	68f8      	ldr	r0, [r7, #12]
  8001d96:	f7ff fd49 	bl	800182c <I2C_SendAddress>
 
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR,
  8001d9a:	68fb      	ldr	r3, [r7, #12]
  8001d9c:	681b      	ldr	r3, [r3, #0]
  8001d9e:	3314      	adds	r3, #20
@@ -3744,6 +3663,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001dac:	4603      	mov	r3, r0
  8001dae:	2b00      	cmp	r3, #0
  8001db0:	d006      	beq.n	8001dc0 <I2C_Receive+0x46>
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutADDR;
  8001db2:	68fb      	ldr	r3, [r7, #12]
@@ -3795,7 +3715,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001df6:	601a      	str	r2, [r3, #0]
 
 		// wait for a byte received
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001df8:	68fb      	ldr	r3, [r7, #12]
  8001dfa:	681b      	ldr	r3, [r3, #0]
  8001dfc:	3314      	adds	r3, #20
@@ -3806,6 +3726,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001e0a:	4603      	mov	r3, r0
  8001e0c:	2b00      	cmp	r3, #0
  8001e0e:	d006      	beq.n	8001e1e <I2C_Receive+0xa4>
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
  8001e10:	68fb      	ldr	r3, [r7, #12]
@@ -3860,7 +3782,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		while (rx_data_to_get > 2)
  8001e50:	e027      	b.n	8001ea2 <I2C_Receive+0x128>
 		{
-			if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001e52:	68fb      	ldr	r3, [r7, #12]
  8001e54:	681b      	ldr	r3, [r3, #0]
  8001e56:	3314      	adds	r3, #20
@@ -3871,6 +3793,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001e64:	4603      	mov	r3, r0
  8001e66:	2b00      	cmp	r3, #0
  8001e68:	d006      	beq.n	8001e78 <I2C_Receive+0xfe>
+			I2C_SR1_RXNE, I2C_TIMEOUT))
 			{
 				p_handle_i2c->error = kI2cErrTimeoutRXNE;
  8001e6a:	68fb      	ldr	r3, [r7, #12]
@@ -3918,7 +3841,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		}
 
 		// read second last byte
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001ea8:	68fb      	ldr	r3, [r7, #12]
  8001eaa:	681b      	ldr	r3, [r3, #0]
  8001eac:	3314      	adds	r3, #20
@@ -3929,6 +3852,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001eba:	4603      	mov	r3, r0
  8001ebc:	2b00      	cmp	r3, #0
  8001ebe:	d006      	beq.n	8001ece <I2C_Receive+0x154>
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
  8001ec0:	68fb      	ldr	r3, [r7, #12]
@@ -3977,7 +3902,7 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001f06:	601a      	str	r2, [r3, #0]
 
 		// receive last byte
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
  8001f08:	68fb      	ldr	r3, [r7, #12]
  8001f0a:	681b      	ldr	r3, [r3, #0]
  8001f0c:	3314      	adds	r3, #20
@@ -3988,6 +3913,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
  8001f1a:	4603      	mov	r3, r0
  8001f1c:	2b00      	cmp	r3, #0
  8001f1e:	d006      	beq.n	8001f2e <I2C_Receive+0x1b4>
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
  8001f20:	68fb      	ldr	r3, [r7, #12]

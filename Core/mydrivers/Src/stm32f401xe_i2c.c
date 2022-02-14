@@ -6,9 +6,10 @@
  */
 
 #include "stm32f401xe_i2c.h"
-#include "stm32f401xe_systick.h"
+
 #include "stm32f401xe_gpio.h"
 #include "stm32f401xe_rcc.h"
+#include "stm32f401xe_systick.h"
 
 /*
  * Wait until flag is set until timeout
@@ -18,24 +19,24 @@
  * @param[timeout[ - timeout in miliseconds until re
  * @return - void
  */
-static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,uint32_t flag,uint32_t timeout)
+static uint8_t I2C_WaitForFlagUntilTimeout(volatile uint32_t *status_reg,
+		uint32_t flag, uint32_t timeout)
 {
 	uint32_t start_time = SYSTICK_GetTick();
 	// check flag until timeout
 	while (!(flag & *(status_reg)))
 	{
 		{
-			if(SYSTICK_GetTick() - start_time > timeout)
-					{
-						// return error status
-						return 1;
-					}
+			if (SYSTICK_GetTick() - start_time > timeout)
+			{
+				// return error status
+				return 1;
+			}
 		}
 	}
 	// return no error
 	return 0;
 }
-
 
 /*
  * Problem with I2C that SDA stays on low state after reset
@@ -100,7 +101,8 @@ static void I2C_SendAddress(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
 	// 1.1 Wait until SB flag is set
 
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_SB, I2C_TIMEOUT) == 1)
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_SB,
+	I2C_TIMEOUT) == 1)
 	{
 		p_handle_i2c->error = kI2cErrTimeoutSB;
 	}
@@ -240,8 +242,6 @@ void I2C_InitGpioPins(I2c_Handle_t *p_handle_i2c)
 	return;
 }
 
-
-
 /*
  * Basic init function
  *
@@ -280,7 +280,6 @@ void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 	return;
 }
 
-
 /*
  * Transmit data in polling mode
  *
@@ -297,12 +296,12 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	uint32_t tx_data_to_send = data_size;
 	uint8_t temp_byte;
 
-
 	p_handle_i2c->status = kI2cStatusTxPolling;
 
 	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_TRANSMITTER);
 	// wait until ADDR is set
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR,
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutADDR;
 		p_handle_i2c->status = kI2cStatusIdle;
@@ -314,7 +313,8 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	temp_byte = p_handle_i2c->p_i2cx->SR2;
 
 	// 5. TxE bit is set when acknowledge bit is sent;
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE,
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutTXE;
 		p_handle_i2c->status = kI2cStatusIdle;
@@ -328,13 +328,14 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	while (tx_data_to_send > 0)
 	{
 		// wait until data register is empty
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_TXE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutTXE;
 			p_handle_i2c->status = kI2cStatusIdle;
 			return;
 		}
-
 
 		// put data in data register
 		p_handle_i2c->p_i2cx->DR =
@@ -348,7 +349,9 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		if (tx_data_to_send == 0)
 		{
 			// check if data transfer is finsihed
-			if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_BTF, I2C_TIMEOUT))
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+					I2C_SR1_BTF,
+					I2C_TIMEOUT))
 			{
 				p_handle_i2c->error = kI2cErrTimeoutBTF;
 				p_handle_i2c->status = kI2cStatusIdle;
@@ -364,7 +367,8 @@ void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	}
 
 	// in case of sending only mem address
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_TXE,
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutTXE;
 		p_handle_i2c->status = kI2cStatusIdle;
@@ -394,7 +398,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 
 	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_RECEIVER);
 
-	if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR, I2C_TIMEOUT))
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR,
+	I2C_TIMEOUT))
 	{
 		p_handle_i2c->error = kI2cErrTimeoutADDR;
 		p_handle_i2c->status = kI2cStatusIdle;
@@ -414,7 +419,9 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
 
 		// wait for a byte received
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
 			p_handle_i2c->status = kI2cStatusIdle;
@@ -437,7 +444,8 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		// read all the bytes until second last
 		while (rx_data_to_get > 2)
 		{
-			if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+			I2C_SR1_RXNE, I2C_TIMEOUT))
 			{
 				p_handle_i2c->error = kI2cErrTimeoutRXNE;
 				p_handle_i2c->status = kI2cStatusIdle;
@@ -453,7 +461,9 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		}
 
 		// read second last byte
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
 			p_handle_i2c->status = kI2cStatusIdle;
@@ -468,7 +478,9 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
 
 		// receive last byte
-		if(I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_RXNE, I2C_TIMEOUT))
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
 		{
 			p_handle_i2c->error = kI2cErrTimeoutRXNE;
 			p_handle_i2c->status = kI2cStatusIdle;
@@ -483,6 +495,3 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 	p_handle_i2c->status = kI2cStatusIdle;
 	return;
 }
-
-
-

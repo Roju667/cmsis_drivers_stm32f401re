@@ -5,19 +5,21 @@
  *      Author: gheorghe.ghirjev
  */
 
-#include <string.h>
-#include <math.h>
 #include "bmp180.h"
+
+#include <math.h>
+#include <string.h>
+
 #include "stm32f401xe_i2c.h"
 #include "stm32f401xe_systick.h"
 
-
 /*!
-* @brief:    - Read and check bmp chip ID.This value is fixed to 0x55,
-*              and can be used to check whether communication is functioning.
-* @param[in] - NONE.
-* @return    - NO_ERR if chip_id is equal to 0x55, otherwise CHIP_ID_INVALID_ERR.
-*/
+ * @brief:    - Read and check bmp chip ID.This value is fixed to 0x55,
+ *              and can be used to check whether communication is functioning.
+ * @param[in] - NONE.
+ * @return    - NO_ERR if chip_id is equal to 0x55, otherwise
+ * CHIP_ID_INVALID_ERR.
+ */
 static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 {
 	uint8_t out_buff = 0;
@@ -37,63 +39,64 @@ static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 	return ret_val;
 }
 
-
 /*!
-* @brief:    - Write oversampling settings to the Control register.
-* @param[in] - struct of type oss_t
-* @param[in] - enum of type oss_ratio_t
-* @return    - None
-*/
+ * @brief:    - Write oversampling settings to the Control register.
+ * @param[in] - struct of type oss_t
+ * @param[in] - enum of type oss_ratio_t
+ * @return    - None
+ */
 static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
 {
-	uint8_t in_buff[2] = {0};
+	uint8_t in_buff[2] =
+	{ 0 };
 
 	switch (ratio)
 	{
-		case ULTRA_LOW_PWR_MODE:
-		{
+	case ULTRA_LOW_PWR_MODE:
+	{
 		p_bmp->oss.wait_time = BMP_OSS0_CONV_TIME;
-			break;
-		}
-		case STANDARD_MODE:
-		{
+		break;
+	}
+	case STANDARD_MODE:
+	{
 		p_bmp->oss.wait_time = BMP_OSS1_CONV_TIME;
-			break;
-		}
-		case HIGH:
-		{
+		break;
+	}
+	case HIGH:
+	{
 		p_bmp->oss.wait_time = BMP_OSS2_CONV_TIME;
-			break;
-		}
-		case ULTRA_HIGH_RESOLUTION:
-		{
+		break;
+	}
+	case ULTRA_HIGH_RESOLUTION:
+	{
 		p_bmp->oss.wait_time = BMP_OSS3_CONV_TIME;
-			break;
-		}
-		default:
-		{
+		break;
+	}
+	default:
+	{
 		p_bmp->oss.wait_time = BMP_OSS1_CONV_TIME;
-			break;
-		}
+		break;
+	}
 	}
 
 	p_bmp->oss.ratio = ratio;
-	BMP_SET_I2CRW_REG (in_buff[1], BMP_CTRL_OSS_MASK(ratio));
+	BMP_SET_I2CRW_REG(in_buff[1], BMP_CTRL_OSS_MASK(ratio));
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, in_buff, 2);
-
 }
 
-
 /*!
-* @brief:    - Read calibration BMP data. The E2PROM has stored 176 bit of individual calibration data.
-*              This is used to compensate offset, temperature dependence and other parameters of the sensor.
-* @param[in] - struct of type bmp_calib_param_t
-* @return    - NO_ERR if read calibration data are valid otherwise READ_CALIB_ERR.
-*/
+ * @brief:    - Read calibration BMP data. The E2PROM has stored 176 bit of
+ * individual calibration data. This is used to compensate offset, temperature
+ * dependence and other parameters of the sensor.
+ * @param[in] - struct of type bmp_calib_param_t
+ * @return    - NO_ERR if read calibration data are valid otherwise
+ * READ_CALIB_ERR.
+ */
 static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 {
 	bmp_err_t ret_val = NO_ERR;
-	uint8_t out_buff[BMP_CALIB_DATA_SIZE] = {0};
+	uint8_t out_buff[BMP_CALIB_DATA_SIZE] =
+	{ 0 };
 	uint8_t i = 0;
 	uint8_t j = 1;
 	int16_t *calib_data = (int16_t*) &p_bmp->calib;
@@ -102,10 +105,10 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CALIB_ADDR, 0, 0);
 	// read data
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff,
-			BMP_CALIB_DATA_SIZE);
+	BMP_CALIB_DATA_SIZE);
 
 	// Store read calib data to bmp_calib struct.
-	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j+2)
+	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j + 2)
 	{
 		calib_data[i] = (out_buff[i * 2] << 8) | out_buff[j];
 
@@ -120,30 +123,30 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 }
 
 /*!
-* @brief:    - Performe initial sequence of BMP sensor
-* @param[in] - pointer to struct of type bmp_calib_param_t
-* @return    - None.
-*/
+ * @brief:    - Performe initial sequence of BMP sensor
+ * @param[in] - pointer to struct of type bmp_calib_param_t
+ * @return    - None.
+ */
 void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
 {
-
-	memset(p_bmp, 0x00, sizeof(&p_bmp)); // clear bmp strut;
+	memset(p_bmp, 0x00, sizeof(&p_bmp));  // clear bmp strut;
 	p_bmp->p_i2c_handle = p_i2c_handle;
 	p_bmp->err = bmp180_read_chip_id(p_bmp); // check chip validity and I2C communication.
 	p_bmp->err = bmp180_read_calib_data(p_bmp);
-	bmp180_set_oss(p_bmp, ULTRA_HIGH_RESOLUTION);       // set oversampling settings
+	bmp180_set_oss(p_bmp, ULTRA_HIGH_RESOLUTION);  // set oversampling settings
 }
 
 /*!
-* @brief:    - Get uncompensated temperature value. UT = temperature data (16 bit)
-* @param[in] - None.
-* @return    - uncompensated temp.
-*/
+ * @brief:    - Get uncompensated temperature value. UT = temperature data (16
+ * bit)
+ * @param[in] - None.
+ * @return    - uncompensated temp.
+ */
 int32_t bmp180_get_ut(bmp180_t *p_bmp)
 {
 	uint8_t out_buff[2];
 
-	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_TEMP_CONV);
+	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_TEMP_CONV);
 
 	// write conversion time
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
@@ -157,10 +160,10 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
 }
 
 /*!
-* @brief:    - Calc true temperature.
-* @param[in] - pointer to struct of type bmp_t
-* @return    - true temp.
-*/
+ * @brief:    - Calc true temperature.
+ * @param[in] - pointer to struct of type bmp_t
+ * @return    - true temp.
+ */
 float bmp180_get_temp(bmp180_t *p_bmp)
 {
 	int32_t X1 = 0;
@@ -182,16 +185,18 @@ float bmp180_get_temp(bmp180_t *p_bmp)
 }
 
 /*!
-* @brief:    - Get uncompensated pressure value. UP = pressure data (16 to 19 bit)
-* @param[in] - struct of type oss_t
-* @return    - uncompensated pressure.
-*/
+ * @brief:    - Get uncompensated pressure value. UP = pressure data (16 to 19
+ * bit)
+ * @param[in] - struct of type oss_t
+ * @return    - uncompensated pressure.
+ */
 int32_t bmp180_get_up(bmp180_t *p_bmp)
 {
-	uint8_t out_buff[3] = {0};
+	uint8_t out_buff[3] =
+	{ 0 };
 	long up = 0;
 
-	BMP_SET_I2CRW_REG (out_buff[0], BMP_SET_PRESS_CONV);
+	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_PRESS_CONV);
 
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
@@ -200,17 +205,16 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 3);
 
-
 	up = ((out_buff[0] << SHORT_SHIFT) + (out_buff[1] << BYTE_SHIFT)
 			+ out_buff[2]) >> (8 - p_bmp->oss.ratio);
 	return up;
 }
 
 /*!
-* @brief:    - Calc true pressure.
+ * @brief:    - Calc true pressure.
  * @param[in] - struct of type bmp180_t
-* @return    - true pressure in Pa.
-*/
+ * @return    - true pressure in Pa.
+ */
 int32_t bmp180_get_pressure(bmp180_t *p_bmp)
 {
 	int32_t X1, X2, X3, B3, B6, p = 0;
@@ -246,10 +250,10 @@ int32_t bmp180_get_pressure(bmp180_t *p_bmp)
 }
 
 /*!
-* @brief:    - Calc true altitude.
+ * @brief:    - Calc true altitude.
  * @param[in] - struct of type bmp180_t
-* @return    - true pressure.
-*/
+ * @return    - true pressure.
+ */
 float bmp180_get_altitude(bmp180_t *p_bmp)
 {
 	float altitude = 0;
@@ -259,13 +263,11 @@ float bmp180_get_altitude(bmp180_t *p_bmp)
 					- pow((p_bmp->data.press / BMP_PRESS_CONST_SEA_LEVEL),
 							(1 / 5.255)));
 
-	if ((altitude <= BMP_MIN_ALT_THRESHOLD) || (altitude >= BMP_MAX_ALT_THRESHOLD))
+	if ((altitude <= BMP_MIN_ALT_THRESHOLD)
+			|| (altitude >= BMP_MAX_ALT_THRESHOLD))
 	{
 		p_bmp->err = GET_ALTITUDE_ERR;
 	}
 
 	return altitude;
 }
-
-
-

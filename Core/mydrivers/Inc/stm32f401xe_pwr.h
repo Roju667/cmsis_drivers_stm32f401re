@@ -37,9 +37,9 @@ typedef enum StopModes_t
 	kStopMR, kStopMRFPD, kStopLP, kStopLPFPD, kStopMRLV, kStopLPLV
 } StopModes_t;
 
-void Pwr_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode);
-void Pwr_EnterSleepMode(PwrExit_t exit);
-void Pwr_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode);
-void Pwr_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len);
-void Pwr_EnterStandbyMode(PwrExit_t exit);
+void PWR_EnablePvd(PvdThresholdLevel_t pvd_level, PvdMode_t mode);
+void PWR_EnterSleepMode(PwrExit_t exit);
+void PWR_EnterStopMode(PwrExit_t exit, StopModes_t stop_mode);
+void PWR_WriteToBackupRegister(uint32_t *p_data_buffer, uint8_t data_len);
+void PWR_EnterStandbyMode(PwrExit_t exit);
 #endif /* MYDRIVERS_INC_STM32F401XE_PWR_H_ */
