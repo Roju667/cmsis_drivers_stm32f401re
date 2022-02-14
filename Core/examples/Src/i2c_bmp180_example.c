@@ -16,6 +16,7 @@
 #include "stm32f401xe_rcc.h"
 #include "stm32f401xe_usart.h"
 #include "stm32f401xe_wwdg.h"
+#include "stm32f401xe_systick.h"
 #include "stm32f4xx.h"
 #include "bmp180.h"
 #include "utilities.h"
@@ -35,20 +36,28 @@ void i2c_bmp180_example(void)
 	I2C1Config(&p_i2c1);
 	GPIOConfig();
 	USART2Config(&p_usart2);
+	SYSTICK_ConfigureMilisecond();
 
 
 	bmp180_init(&p_bmp180, &p_i2c1);
 	p_bmp180.uncomp.temp = bmp180_get_ut(&p_bmp180);
 	p_bmp180.data.temp = bmp180_get_temp(&p_bmp180);
 
+	uint32_t tick = SYSTICK_GetTick();
+
 	while (1)
 	{
-		for (uint32_t i = 0; i < 100000; i++)
+		if(SYSTICK_GetTick() - tick  > 100)
 		{
+			GPIO_TogglePin(GPIOA, kGpioPin5);
+				p_bmp180.uncomp.temp = bmp180_get_ut(&p_bmp180);
+				p_bmp180.data.temp = bmp180_get_temp(&p_bmp180);
+				p_bmp180.uncomp.press = bmp180_get_up(&p_bmp180);
+				p_bmp180.data.press = bmp180_get_pressure(&p_bmp180);
+				p_bmp180.data.altitude = bmp180_get_altitude(&p_bmp180);
+				tick = SYSTICK_GetTick();
 		}
-		GPIO_TogglePin(GPIOA, kGpioPin5);
-		p_bmp180.uncomp.temp = bmp180_get_ut(&p_bmp180);
-		p_bmp180.data.temp = bmp180_get_temp(&p_bmp180);
+
 	}
 }
 

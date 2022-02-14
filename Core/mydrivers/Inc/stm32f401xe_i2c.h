@@ -53,6 +53,9 @@
 #define I2C3_SMBA_PIN_FLAG (1U << I2C3_SMBA_PIN)
 #define I2C3_SMBA_PORT GPIOA
 
+// Timeout for while loops in i2c functions in miliseconds
+#define I2C_TIMEOUT	1000
+
 /*
  * @Speed  fPCLK1 must be at least 2 MHz to achieve Sm mode I?C frequencies. It
  * must be at least 4 MHz to achieve Fm mode I?C frequencies. It must be a
@@ -68,14 +71,21 @@ typedef enum I2cSpeed_t
  */
 typedef enum I2cError_t
 {
-	kI2cErrNoError, kI2cErrWrongPclkFreq
+	kI2cErrNoError, kI2cErrWrongPclkFreq, kI2cErrTimeoutTXE, kI2cErrTimeoutADDR, kI2cErrTimeoutBTF,kI2cErrTimeoutRXNE,kI2cErrTimeoutSB
 } I2cError_t;
+
+typedef enum I2cLineStatus_t
+{
+	kI2cStatusIdle,kI2cStatusRxPolling,kI2cStatusTxPolling
+} I2cLineStatus_t;
 
 typedef struct I2c_Handle_t
 {
 	I2C_TypeDef *p_i2cx;
 
 	I2cError_t error;
+
+	I2cLineStatus_t status;
 
 } I2c_Handle_t;
 

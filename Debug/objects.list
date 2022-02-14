@@ -14,6 +14,7 @@
 "./Core/mydrivers/Src/stm32f401xe_rcc.o"
 "./Core/mydrivers/Src/stm32f401xe_rtc.o"
 "./Core/mydrivers/Src/stm32f401xe_spi.o"
+"./Core/mydrivers/Src/stm32f401xe_systick.o"
 "./Core/mydrivers/Src/stm32f401xe_tim.o"
 "./Core/mydrivers/Src/stm32f401xe_usart.o"
 "./Core/mydrivers/Src/stm32f401xe_wwdg.o"

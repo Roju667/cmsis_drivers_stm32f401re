@@ -9,16 +9,7 @@
 #include <math.h>
 #include "bmp180.h"
 #include "stm32f401xe_i2c.h"
-
-
-static void bmp180_delay(uint32_t ms)
-{
-	for (uint32_t i = 0; i < ms; i++)
-	{
-
-	}
-}
-
+#include "stm32f401xe_systick.h"
 
 
 /*!
@@ -35,9 +26,8 @@ static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 	// data read
 	// send slave address and memory address
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CHIP_ID_REG, 0, 0);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
 	// read data
-	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 1);
+	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, &out_buff, 1);
 
 	if (BMP_CHIP_ID_VAL != out_buff)
 	{
@@ -110,7 +100,6 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 
 	// send slave address and memory address
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CALIB_ADDR, 0, 0);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
 	// read data
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff,
 			BMP_CALIB_DATA_SIZE);
@@ -142,7 +131,7 @@ void bmp180_init(bmp180_t *p_bmp, I2c_Handle_t *p_i2c_handle)
 	p_bmp->p_i2c_handle = p_i2c_handle;
 	p_bmp->err = bmp180_read_chip_id(p_bmp); // check chip validity and I2C communication.
 	p_bmp->err = bmp180_read_calib_data(p_bmp);
-	bmp180_set_oss(p_bmp, HIGH);       // set oversampling settings
+	bmp180_set_oss(p_bmp, ULTRA_HIGH_RESOLUTION);       // set oversampling settings
 }
 
 /*!
@@ -159,10 +148,9 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
 	// write conversion time
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	SYSTICK_Delay(p_bmp->oss.wait_time);
 	// send slave address and memory address
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 2);
 
 	return (out_buff[0] << BYTE_SHIFT) | out_buff[1];
@@ -207,10 +195,9 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
 
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
+	SYSTICK_Delay(p_bmp->oss.wait_time);
 	// send slave address and memory address
 	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
-	bmp180_delay(BMP_TEMP_CONV_TIME * 10000);
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 3);
 
 
