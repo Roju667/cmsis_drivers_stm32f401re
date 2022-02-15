@@ -153,9 +153,29 @@ typedef struct DMA_Handle_t
 
 } DMA_Handle_t;
 
-void DMA_StreamInit(DMA_Handle_t *p_handle_dma);
-void DMA_WriteAdresses(DMA_Stream_TypeDef *p_dma_streamx, uint32_t *peri_add,
-		uint32_t *mem0_add, uint32_t *mem1_add);
-void DMA_EnableDoubleBufferMode(DMA_Stream_TypeDef *p_dma_streamx);
+
+static inline void DMA_EnableDoubleBufferMode(DMA_Stream_TypeDef *p_dma_streamx)
+{
+	p_dma_streamx->CR |= DMA_SxCR_DBM;
+}
+
+static inline void DMA_SetAddresPeri(DMA_Stream_TypeDef *p_dma_streamx,volatile uint32_t *peri_add)
+{
+	p_dma_streamx->PAR = (uint32_t) peri_add;
+}
+
+static inline void DMA_SetAddresMem0(DMA_Stream_TypeDef *p_dma_streamx,uint32_t *mem0_add)
+{
+	p_dma_streamx->M0AR = (uint32_t) mem0_add;
+}
+
+static inline void DMA_SetAddresMem1(DMA_Stream_TypeDef *p_dma_streamx,uint32_t *mem1_add)
+{
+	p_dma_streamx->M1AR = (uint32_t) mem1_add;
+}
+
+
+
+void DMA_InitBasicParameters(DMA_Handle_t *p_handle_dma);
 
 #endif /* CORE_MYDRIVERS_INC_STM32F401XE_DMA_H_ */

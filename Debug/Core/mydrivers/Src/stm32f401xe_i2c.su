@@ -5,5 +5,7 @@ stm32f401xe_i2c.c:128:13:I2C_CalculateCCRandTRISE	24	static
 stm32f401xe_i2c.c:182:6:I2C_InitClock	16	static
 stm32f401xe_i2c.c:211:6:I2C_InitGpioPins	16	static
 stm32f401xe_i2c.c:252:6:I2C_SetBasicParameters	16	static
-stm32f401xe_i2c.c:293:6:I2C_Transmit	32	static
-stm32f401xe_i2c.c:393:6:I2C_Receive	32	static
+stm32f401xe_i2c.c:292:6:I2C_Transmit	32	static
+stm32f401xe_i2c.c:368:6:I2C_WriteMem	32	static
+stm32f401xe_i2c.c:468:6:I2C_Receive	32	static
+stm32f401xe_i2c.c:586:6:I2C_ReadMemory	40	static

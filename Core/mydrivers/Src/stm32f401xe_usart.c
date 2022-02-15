@@ -272,13 +272,13 @@ void USART_ConfigureReceiveDMA(USART_Handle_t *p_handle_usart,
 	// configure double buffer if neccesary
 	if (p_data_buffer1 != NULL)
 	{
+		DMA_SetAddresMem1(p_handle_usart->usart_dma.p_dma_stream_rx, (uint32_t*)p_data_buffer1);
 		DMA_EnableDoubleBufferMode(p_handle_usart->usart_dma.p_dma_stream_rx);
 		p_handle_usart->rx_status = kUsartRxDma;
 	}
 	// write source and destinations
-	DMA_WriteAdresses(p_handle_usart->usart_dma.p_dma_stream_rx,
-			(uint32_t*) &(p_handle_usart->p_usartx->DR),
-			(uint32_t*) p_data_buffer0, (uint32_t*) p_data_buffer1);
+	DMA_SetAddresPeri(p_handle_usart->usart_dma.p_dma_stream_rx, &(p_handle_usart->p_usartx->DR));
+	DMA_SetAddresMem0(p_handle_usart->usart_dma.p_dma_stream_rx, (uint32_t*)p_data_buffer0);
 
 	// configure irq flags
 	p_handle_usart->usart_dma.p_dma_stream_rx->CR |= DMA_SxCR_TCIE;
@@ -402,14 +402,13 @@ void USART_ConfigureTransmitDMA(USART_Handle_t *p_handle_usart,
 	// configure double buffer if neccesary
 	if (p_data_buffer1 != NULL)
 	{
-		DMA_EnableDoubleBufferMode(p_handle_usart->usart_dma.p_dma_stream_tx);
+		DMA_SetAddresMem1(p_handle_usart->usart_dma.p_dma_stream_tx, (uint32_t*)p_data_buffer1);
 		p_handle_usart->tx_status = kUsartTxDma;
 	}
 
 	// assign peripheral address and mem address to dma registers
-	DMA_WriteAdresses(p_handle_usart->usart_dma.p_dma_stream_tx,
-			(uint32_t*) &(p_handle_usart->p_usartx->DR),
-			(uint32_t*) p_data_buffer0, (uint32_t*) p_data_buffer1);
+	DMA_SetAddresPeri(p_handle_usart->usart_dma.p_dma_stream_tx, &(p_handle_usart->p_usartx->DR));
+	DMA_SetAddresMem0(p_handle_usart->usart_dma.p_dma_stream_tx, (uint32_t*)p_data_buffer0);
 
 	// configure irq flags
 	//USART_EnableIRQs(p_handle_usart, USART_CR1_TCIE, 0, 0);

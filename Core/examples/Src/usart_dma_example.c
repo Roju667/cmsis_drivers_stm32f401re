@@ -144,13 +144,13 @@ void DMA1Config(DMA_Handle_t *p_dma1)
 	p_dma1->stream_config.peri_data_size = kByte;
 	p_dma1->stream_config.peri_increment = kIncrementDisable;
 
-	DMA_StreamInit(p_dma1);
+	DMA_InitBasicParameters(p_dma1);
 
 	// send
 	p_dma1->p_dma_streamx = DMA1_Stream6;
 	p_dma1->stream_config.direction = kMemToPeri;
 
-	DMA_StreamInit(p_dma1);
+	DMA_InitBasicParameters(p_dma1);
 }
 
 /*

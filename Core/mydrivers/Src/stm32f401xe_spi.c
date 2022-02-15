@@ -313,9 +313,9 @@ static void SPI_ClockEnable(SPI_TypeDef *p_spix)
  * @param[] - pin selection
  * @return - void
  */
-void SPI_InitGpioPins(Spi_Handle_t *p_spi_handle, kSpiPinConfig_t nss_config,
-		kSpiPinConfig_t sclk_config, kSpiPinConfig_t miso_config,
-		kSpiPinConfig_t mosi_config)
+void SPI_InitGpioPins(Spi_Handle_t *p_spi_handle, SpiPinConfig_t nss_config,
+		SpiPinConfig_t sclk_config, SpiPinConfig_t miso_config,
+		SpiPinConfig_t mosi_config)
 {
 	if (p_spi_handle->p_spix == SPI1)
 	{

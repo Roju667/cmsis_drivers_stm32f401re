@@ -146,8 +146,14 @@ void I2C_InitClock(I2c_Handle_t *p_handle_i2c);
 void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed);
 void I2C_InitGpioPins(I2c_Handle_t *p_handle_i2c);
 
-void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+// Transmit functions
+void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *p_tx_data_buffer, uint32_t data_size);
+void I2C_WriteMem(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size);
+
+// Receive functions
 void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+		uint8_t *p_rx_data_buffer, uint32_t data_size);
+void I2C_ReadMemory(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t mem_address,
 		uint8_t *p_rx_data_buffer, uint32_t data_size);
 #endif /* MYDRIVERS_INC_STM32F401XE_I2C_H_ */

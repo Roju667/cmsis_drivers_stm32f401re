@@ -27,7 +27,7 @@ static bmp_err_t bmp180_read_chip_id(bmp180_t *p_bmp)
 
 	// data read
 	// send slave address and memory address
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CHIP_ID_REG, 0, 0);
+	I2C_WriteMem(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CHIP_ID_REG, 0, 0);
 	// read data
 	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, &out_buff, 1);
 
@@ -81,7 +81,7 @@ static void bmp180_set_oss(bmp180_t *p_bmp, oss_ratio_t ratio)
 
 	p_bmp->oss.ratio = ratio;
 	BMP_SET_I2CRW_REG(in_buff[1], BMP_CTRL_OSS_MASK(ratio));
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, in_buff, 2);
+	I2C_WriteMem(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, in_buff, 2);
 }
 
 /*!
@@ -102,10 +102,7 @@ static bmp_err_t bmp180_read_calib_data(bmp180_t *p_bmp)
 	int16_t *calib_data = (int16_t*) &p_bmp->calib;
 
 	// send slave address and memory address
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_CALIB_ADDR, 0, 0);
-	// read data
-	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff,
-	BMP_CALIB_DATA_SIZE);
+	I2C_ReadMemory(p_bmp->p_i2c_handle,BMP_READ_ADDR,BMP_CALIB_ADDR,out_buff,BMP_CALIB_DATA_SIZE);
 
 	// Store read calib data to bmp_calib struct.
 	for (i = 0; i <= BMP_CALIB_DATA_SIZE / 2; i++, j + 2)
@@ -149,12 +146,11 @@ int32_t bmp180_get_ut(bmp180_t *p_bmp)
 	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_TEMP_CONV);
 
 	// write conversion time
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
+	I2C_WriteMem(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
 	SYSTICK_Delay(p_bmp->oss.wait_time);
-	// send slave address and memory address
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
-	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 2);
+	// read memory
+	I2C_ReadMemory(p_bmp->p_i2c_handle,BMP_READ_ADDR,BMP_DATA_MSB_ADDR,out_buff,2);
 
 	return (out_buff[0] << BYTE_SHIFT) | out_buff[1];
 }
@@ -198,12 +194,11 @@ int32_t bmp180_get_up(bmp180_t *p_bmp)
 
 	BMP_SET_I2CRW_REG(out_buff[0], BMP_SET_PRESS_CONV);
 
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
+	I2C_WriteMem(p_bmp->p_i2c_handle, BMP_WRITE_ADDR, BMP_CTRL_REG, out_buff,
 			1);
 	SYSTICK_Delay(p_bmp->oss.wait_time);
 	// send slave address and memory address
-	I2C_Transmit(p_bmp->p_i2c_handle, BMP_READ_ADDR, BMP_DATA_MSB_ADDR, 0, 0);
-	I2C_Receive(p_bmp->p_i2c_handle, BMP_READ_ADDR, out_buff, 3);
+	I2C_ReadMemory(p_bmp->p_i2c_handle,BMP_READ_ADDR,BMP_DATA_MSB_ADDR,out_buff,3);
 
 	up = ((out_buff[0] << SHORT_SHIFT) + (out_buff[1] << BYTE_SHIFT)
 			+ out_buff[2]) >> (8 - p_bmp->oss.ratio);

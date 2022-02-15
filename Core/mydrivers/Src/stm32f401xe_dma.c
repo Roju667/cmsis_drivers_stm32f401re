@@ -100,26 +100,7 @@ static void DMA_ClearAllStreamFlags(DMA_Handle_t *p_handle_dma,
 	}
 }
 
-void DMA_EnableDoubleBufferMode(DMA_Stream_TypeDef *p_dma_streamx)
-{
-	p_dma_streamx->CR |= DMA_SxCR_DBM;
-	return;
-}
-
-void DMA_WriteAdresses(DMA_Stream_TypeDef *p_dma_streamx, uint32_t *peri_add,
-		uint32_t *mem0_add, uint32_t *mem1_add)
-{
-	p_dma_streamx->PAR = (uint32_t) peri_add;
-
-	p_dma_streamx->M0AR = (uint32_t) mem0_add;
-
-	// only used for double buffer mode
-	p_dma_streamx->M1AR = (uint32_t) mem1_add;
-
-	return;
-}
-
-void DMA_StreamInit(DMA_Handle_t *p_handle_dma)
+void DMA_InitBasicParameters(DMA_Handle_t *p_handle_dma)
 {
 	// save stream number in uint8
 	uint8_t stream_number = DMA_GetStreamNumber(p_handle_dma);

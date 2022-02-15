@@ -281,7 +281,82 @@ void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
 }
 
 /*
- * Transmit data in polling mode
+ * Transmit data to target slave in polling
+ *
+ * @param[*p_handle_i2c] - pointer to handler to i2c structure
+ * @param[slave_address] - address to slave in 7 bit addressing mode
+ * @param[p_data_buffer] - pointer to data buffer that has to be send
+ * @param[data_size] - amount of data to be send [in bytes]
+ * @return - uint8_t - to return error
+ */
+void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
+{
+	uint32_t tx_data_to_send = data_size;
+	uint8_t temp_byte;
+
+	p_handle_i2c->status = kI2cStatusTxPolling;
+
+	I2C_SendAddress(p_handle_i2c, slave_address, I2C_MODE_TRANSMITTER);
+	// wait until ADDR is set
+	if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1), I2C_SR1_ADDR,
+	I2C_TIMEOUT))
+	{
+		p_handle_i2c->error = kI2cErrTimeoutADDR;
+		p_handle_i2c->status = kI2cStatusIdle;
+		return;
+	}
+
+	// 4. ADDR is cleared by reading SR1 , Read SR2
+	temp_byte = p_handle_i2c->p_i2cx->SR1;
+	temp_byte = p_handle_i2c->p_i2cx->SR2;
+
+
+	// 7. Data transfer
+	while (tx_data_to_send > 0)
+	{
+		// wait until data register is empty
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_TXE,
+				I2C_TIMEOUT))
+		{
+			p_handle_i2c->error = kI2cErrTimeoutTXE;
+			p_handle_i2c->status = kI2cStatusIdle;
+			return;
+		}
+
+		// put data in data register
+		p_handle_i2c->p_i2cx->DR =
+				p_tx_data_buffer[data_size - tx_data_to_send];
+
+		// change counters
+		tx_data_to_send--;
+
+		// 8. After last bit is written to DR register , Set STOP bit  and interface
+		// is going back to slave mode
+		if (tx_data_to_send == 0)
+		{
+			// check if data transfer is finsihed
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+					I2C_SR1_BTF,
+					I2C_TIMEOUT))
+			{
+				p_handle_i2c->error = kI2cErrTimeoutBTF;
+				p_handle_i2c->status = kI2cStatusIdle;
+				return;
+			}
+
+			// stop transfer
+			p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
+			p_handle_i2c->error = kI2cErrNoError;
+			p_handle_i2c->status = kI2cStatusIdle;
+			return;
+		}
+	}
+}
+
+
+/*
+ * Transmit data, as a second byte send memory register address where data should be written
  *
  * @param[*p_handle_i2c] - pointer to handler to i2c structure
  * @param[slave_address] - address to slave in 7 bit addressing mode
@@ -290,7 +365,7 @@ void I2C_SetBasicParameters(I2c_Handle_t *p_handle_i2c, I2cSpeed_t speed)
  * @param[data_size] - amount of data to be send [in bytes]
  * @return - uint8_t - to return error
  */
-void I2C_Transmit(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
+void I2C_WriteMem(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		uint8_t mem_address, uint8_t *p_tx_data_buffer, uint32_t data_size)
 {
 	uint32_t tx_data_to_send = data_size;
@@ -406,6 +481,118 @@ void I2C_Receive(I2c_Handle_t *p_handle_i2c, uint8_t slave_address,
 		return;
 	}
 
+	// single byte receive
+	if (data_size == 1)
+	{
+		// Disable acknowledge
+		p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_ACK);
+		// 4. ADDR is cleared by reading SR1 , Read SR2
+		temp_byte = p_handle_i2c->p_i2cx->SR1;
+		temp_byte = p_handle_i2c->p_i2cx->SR2;
+
+		// stop comm
+		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
+
+		// wait for a byte received
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
+		{
+			p_handle_i2c->error = kI2cErrTimeoutRXNE;
+			p_handle_i2c->status = kI2cStatusIdle;
+			return;
+		}
+
+		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
+		p_handle_i2c->error = kI2cErrNoError;
+		p_handle_i2c->status = kI2cStatusIdle;
+		return;
+	}
+
+	// multiple bytes receive
+	while (rx_data_to_get >= 2)
+	{
+		// 4. ADDR is cleared by reading SR1 , Read SR2
+		temp_byte = p_handle_i2c->p_i2cx->SR1;
+		temp_byte = p_handle_i2c->p_i2cx->SR2;
+
+		// read all the bytes until second last
+		while (rx_data_to_get > 2)
+		{
+			if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+			I2C_SR1_RXNE, I2C_TIMEOUT))
+			{
+				p_handle_i2c->error = kI2cErrTimeoutRXNE;
+				p_handle_i2c->status = kI2cStatusIdle;
+				return;
+			}
+
+			p_rx_data_buffer[data_size - rx_data_to_get] =
+					p_handle_i2c->p_i2cx->DR;
+			rx_data_to_get--;
+
+			// ack receive
+			p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_ACK;
+		}
+
+		// read second last byte
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
+		{
+			p_handle_i2c->error = kI2cErrTimeoutRXNE;
+			p_handle_i2c->status = kI2cStatusIdle;
+			return;
+		}
+
+		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
+		rx_data_to_get--;
+
+		// after second last byte clear ACK and set stop
+		p_handle_i2c->p_i2cx->CR1 &= ~(I2C_CR1_ACK);
+		p_handle_i2c->p_i2cx->CR1 |= I2C_CR1_STOP;
+
+		// receive last byte
+		if (I2C_WaitForFlagUntilTimeout(&(p_handle_i2c->p_i2cx->SR1),
+				I2C_SR1_RXNE,
+				I2C_TIMEOUT))
+		{
+			p_handle_i2c->error = kI2cErrTimeoutRXNE;
+			p_handle_i2c->status = kI2cStatusIdle;
+			return;
+		}
+
+		p_rx_data_buffer[data_size - rx_data_to_get] = p_handle_i2c->p_i2cx->DR;
+		rx_data_to_get--;
+	}
+	// finish receiving
+	p_handle_i2c->error = kI2cErrNoError;
+	p_handle_i2c->status = kI2cStatusIdle;
+	return;
+}
+
+
+/*
+ * Receive data from target memory register, first send address and memory adress on i2c
+ * then start reading. Polling mode.
+ *
+ * @param[*p_handle_i2c] - pointer to handler to i2c structure
+ * @param[slave_address] - address to slave in 7 bit addressing mode
+ * @param[mem_address] - slave memory register that has to be read
+ * @param[p_data_buffer] - pointer to data buffer that has to be send
+ * @param[data_size] - amount of data to be received [in bytes]
+ * @return - uint8_t - to return error
+ */
+void I2C_ReadMemory(I2c_Handle_t *p_handle_i2c, uint8_t slave_address, uint8_t mem_address,
+		uint8_t *p_rx_data_buffer, uint32_t data_size)
+{
+	uint32_t rx_data_to_get = data_size;
+	uint8_t temp_byte;
+
+	// send adress and memory register address
+	I2C_WriteMem(p_handle_i2c, slave_address, mem_address, 0, 0);
+
+	// start receiving
 	// single byte receive
 	if (data_size == 1)
 	{

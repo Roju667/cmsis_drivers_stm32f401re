@@ -10,30 +10,30 @@
 
 #include "stm32f401xe.h"
 
-typedef enum kSpiClockPolarity_t
+typedef enum
 {
 	kSpiPolarityIdle0, kSpiPolarityIdle1
-} kSpiClockPolarity_t;
+} SpiClockPolarity_t;
 
-typedef enum kSpiClockPhase_t
+typedef enum
 {
 	kSpiPhase1stEdge, kSpiPhase2ndEdge
-} kSpiClockPhase_t;
+} SpiClockPhase_t;
 
-typedef enum kSpiDataFrame_t
+typedef enum
 {
 	kSpiDataFrame8bit, kSpiDataFrame16bit
-} kSpiDataFrame_t;
+} SpiDataFrame_t;
 
-typedef enum kSpiPinConfig_t
+typedef enum
 {
 	kSpiPinNoConfig, kSpiPinStandard, kSpiPinAlternate
-} kSpiPinConfig_t;
+} SpiPinConfig_t;
 
 /*
  * Internal Spi prescaler, maximum SPI speed is fPCLK/2
  */
-typedef enum kSpiClockPrescaler_t
+typedef enum
 {
 	kSpiClockPrescaler2,
 	kSpiClockPrescaler4,
@@ -44,18 +44,18 @@ typedef enum kSpiClockPrescaler_t
 	kSpiClockPrescaler128,
 	kSpiClockPrescaler256
 
-} kSpiClockPrescaler_t;
+} SpiClockPrescaler_t;
 
-typedef enum kSpiError_t
+typedef enum
 {
 	kSpiErrorNoError,
-} kSpiError_t;
+} SpiError_t;
 
 typedef struct Spi_Handle_t
 {
 	SPI_TypeDef *p_spix;
 
-	kSpiError_t error;
+	SpiError_t error;
 
 } Spi_Handle_t;
 
